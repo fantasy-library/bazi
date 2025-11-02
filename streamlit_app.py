@@ -10,9 +10,127 @@ from pathlib import Path
 
 import streamlit as st
 try:
+    from py_iztro import Astro
+    PY_IZTRO_AVAILABLE = True
+except ImportError:
+    PY_IZTRO_AVAILABLE = False
+try:
     from opencc import OpenCC
 except Exception:
     OpenCC = None  # graceful fallback if not installed
+
+
+# 十四主星意象字典
+ziwei_14stars_imagery = {
+    "紫微": {
+        "意象": "帝王端坐於雲端紫殿，掌星辰之令，威而不怒，孤而尊。",
+        "重點": "象徵『統御與中心』。具帝王氣，重權責有格局，信念堅定；但易流於孤高與掌控慾重。若能以仁德領導，威而不僭，即為真紫微之光。"
+    },
+    "天機": {
+        "意象": "天上齒輪轉動不息，似風掀心海，靈光閃爍間萬變如棋。",
+        "重點": "智慧、靈動、思維敏捷。心思縝密、策略高手；但過於聰慧則多憂，易陷進思慮之網。若能停心定志，機巧轉成智慧之光。"
+    },
+    "太陽": {
+        "意象": "烈日高懸，光芒照耀群山，燃盡己身而成萬物光源。",
+        "重點": "熱情與榮耀的化身。正直、正氣、樂於助人，具強烈領導與表現慾；但炙熱過度則傷及自身。需學會溫度的拿捏。"
+    },
+    "武曲": {
+        "意象": "寒鐵鍛成，斷裂亦不屈，一刀斬斷虛妄之霧。",
+        "重點": "代表執行力與堅毅。實幹、重紀律、講原則，勇於承擔；但剛過無柔，則難近人情。若能兼具柔軟，堅鋼方可通達。"
+    },
+    "天同": {
+        "意象": "清泉淙淙流過花間，樂天安然，笑看雲舒雲卷。",
+        "重點": "和平與包容之象。為人善良、親切、有同理，喜歡和諧；但過於安逸則易失進取心。懂得自我激勵方能化福氣為力量。"
+    },
+    "廉貞": {
+        "意象": "火焰中的紅蓮，媚而堅，燒盡方綻。",
+        "重點": "慾望與改革並存。具強烈魅力與行動力，敢愛敢恨；但權慾重、感情複雜。需以紀律淨化慾望，讓熱情化為創造。"
+    },
+    "天府": {
+        "意象": "金庫深藏，流光不顯，厚土孕寶，中藏無盡資源。",
+        "重點": "象徵『穩定與守成』。性格踏實、包容、有理性與安全感；但略保守慢熱。若能在安全中勇敢拓展，福祿自然長久。"
+    },
+    "太陰": {
+        "意象": "明月照水，盈虧交替之間，映出人心的柔光與陰影。",
+        "重點": "典雅內斂、情感豐富。重感受與美感，擅理財與規劃；但易多愁與退縮。若能平衡情與理，將轉化成深邃的洞察力。"
+    },
+    "貪狼": {
+        "意象": "夜行之狼，眼中閃著慾望與自由之火，遊走在人性邊界。",
+        "重點": "慾望、魅力、創造力的代表。多才多藝、社交活躍、敢冒險；但貪玩好奇、易沉迷。若能節制慾念，便能化欲為力，轉俗為華。"
+    },
+    "巨門": {
+        "意象": "黑門深沉，其內光影交錯；一句話，可成刀亦成橋。",
+        "重點": "思辨與言語之星。分析力強、口才好、洞察他人；但易爭辯與多疑。當誠語代替辯語，智慧即由口而生。"
+    },
+    "天相": {
+        "意象": "明鏡如水，映照眾生之影，柔光不爭，自有威儀。",
+        "重點": "平衡與守德之象。穩重、正直、善輔佐；但缺決斷與主見。若能信任自身價值，輔中亦藏權。"
+    },
+    "天梁": {
+        "意象": "蒼松凌雪，高舉不折，庇蔭萬物於風霜之下。",
+        "重點": "象徵仁厚與長壽。重道德、願助人、有智慧，但偶顯保守與教條。學會聽而非說，即可廣納眾智。"
+    },
+    "七殺": {
+        "意象": "獨行的戰士，長劍出鞘，寒光破霧，無懼孤獨。",
+        "重點": "破局與行動的力量。果敢、敢冒險、具開創精神；但衝動且孤傲。若能節制剛烈，以勇包柔，方成真英雄。"
+    },
+    "破軍": {
+        "意象": "鳳凰於火中重生，毀舊以立新，破碎而後方見真形。",
+        "重點": "變革與創造之代言。勇於冒險、不畏顛覆，具強烈革命精神；但情緒波動大、難長久。善用滅與生的循環，即為破軍之道。"
+    }
+}
+
+# 十二星座解釋字典
+zodiac_12_traits = {
+    "牡羊座": {
+        "意象": "烈焰中的戰士，滿懷熱血衝向黎明的第一縷光。",
+        "性情總結": "率真直接、敢衝敢闖，重行動少猶豫。內外皆熱，愛與恨都來得快。勇於領導、討厭服從，但容易因衝動而後悔。心中有火，是開創之星。"
+    },
+    "金牛座": {
+        "意象": "靜默的大地，牛蹄穩健地踏出通往豐收的道路。",
+        "性情總結": "務實、可靠、有耐性，重物質與安全感。愛好舒適與美感，擅長理財與享受生活。固執是其防禦，也是其力量。懂得堅持與慢熟之美。"
+    },
+    "雙子座": {
+        "意象": "風中的雙影，語笑間千思萬變，如鏡亦如霧。",
+        "性情總結": "靈活、聰明、好奇、反應快，天生的溝通者。思想如風般多變，能言善道但難長久專注。需要自由與新鮮，也要學習定心與深度。"
+    },
+    "巨蟹座": {
+        "意象": "月光下的海潮，溫柔卻能吞噬整片沙灘。",
+        "性情總結": "情感深厚、家庭意識強、敏感細膩。愛守護也愛佔有，情緒起伏隨環境而動。當愛被理解時是最溫柔的力量；若受傷，也是最堅硬的殼。"
+    },
+    "獅子座": {
+        "意象": "金色王冠下的太陽雄獅，昂首咆哮於蒼穹之下。",
+        "性情總結": "自信、慷慨、具領導與榮耀感。熱情洋溢，追求被肯定。天生戲劇感與存在感強，若過度追光，易被心中的驕傲反噬。"
+    },
+    "處女座": {
+        "意象": "白衣淨蓮，手執細針，縫補世間的不完美。",
+        "性情總結": "理智、謹慎、追求完美。擅觀察、易焦慮，對自己與他人要求高。心中理性與潔癖並存，若懂得包容，即能成為紛亂世界的秩序者。"
+    },
+    "天秤座": {
+        "意象": "風中的天秤，試圖在每次微風吹拂間維持平衡。",
+        "性情總結": "優雅、公正、重和諧、愛美。擅長社交與協調，但易優柔寡斷。追求公平與愛的美學，是理性與感性完美交融的星座。"
+    },
+    "天蠍座": {
+        "意象": "黑夜裡的鳳凰，沉入灰燼，燃燒後再度重生。",
+        "性情總結": "深沉、神秘、強烈。愛恨極端、有控制慾，思維洞察人心。情感之深可治癒也能毀滅。若懂轉化執念為智慧，則無人能敵。"
+    },
+    "射手座": {
+        "意象": "奔向遠方的弓箭手，弓開滿月，箭指無垠天際。",
+        "性情總結": "自由、樂觀、直率。熱愛冒險與真理，崇尚知識與哲學。心靈無拘，誠實但有時過於直白。靈魂的方向永遠在遠方。"
+    },
+    "摩羯座": {
+        "意象": "寒山之巔的岩羊，一步一印，踽踽登頂。",
+        "性情總結": "堅毅、現實、有責任感，擅規劃與務實。情感內斂但深沉，目標導向、得失分明。習於孤獨，也以孤獨成就。"
+    },
+    "水瓶座": {
+        "意象": "銀河傾瀉的瓶子，將新思想灑向未來的夜空。",
+        "性情總結": "理性又叛逆，重思考與創意。前衛獨立，常走在時代前端。重友情輕情感，渴望自由但害怕束縛。是思想的革命者。"
+    },
+    "雙魚座": {
+        "意象": "夢境中的兩尾魚，於現實與幻想間交錯游舞。",
+        "性情總結": "感性、浪漫、富想像力。共情力強、心軟易感動。易逃避現實，但也能以夢療癒他人。若能學會界限，柔中自有大智。"
+    }
+}
 
 
 def run_script(args):
@@ -175,8 +293,6 @@ with st.sidebar:
 
 生成一篇五千字左右的詳細白話文報告, 要情理兼備, 通暢易懂, 繁體中文。
 """)
-        st.markdown(reference_text)
-        
         # 复制到剪贴板按钮 - 将纯文本存储在session state中
         # 提取纯文本内容（去除Markdown格式标记）
         # 使用正则表达式更安全地移除Markdown标记
@@ -188,7 +304,7 @@ with st.sidebar:
         
         copy_html = f"""
         <div>
-        <button id="copyBtn" style="width:100%; padding:8px; margin-top:10px; background-color:#4CAF50; color:white; border:none; border-radius:4px; cursor:pointer; font-size:14px;">
+        <button id="copyBtn" style="width:100%; padding:8px; margin-bottom:10px; background-color:#4CAF50; color:white; border:none; border-radius:4px; cursor:pointer; font-size:14px;">
             📋 {T("複製到剪貼板")}
         </button>
         </div>
@@ -211,6 +327,7 @@ with st.sidebar:
         </script>
         """
         st.components.v1.html(copy_html, height=60)
+        st.markdown(reference_text)
 
 # Global typography
 st.markdown(
@@ -231,7 +348,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-tabs = st.tabs([T("八字排盘"), T("合婚查询")]) 
+tabs = st.tabs([T("八字排盘"), T("紫微排盤"), T("合婚查询")]) 
 
 
 with tabs[0]:
@@ -295,6 +412,264 @@ with tabs[0]:
 
 
 with tabs[1]:
+    st.subheader(T("紫微排盤"))
+    
+    if not PY_IZTRO_AVAILABLE:
+        st.warning(T("⚠️ 紫微排盤功能需要安裝 py-iztro 庫。請運行: pip install py-iztro pythonmonkey"))
+    else:
+        # 检查 ziwei_calc.py 脚本是否存在
+        ziwei_calc_script = Path(__file__).parent / "ziwei_calc.py"
+        if not ziwei_calc_script.exists():
+            st.error(T("⚠️ 找不到 ziwei_calc.py 脚本文件，请确保该文件存在。"))
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            ziwei_use_gregorian = st.toggle(T("使用公历输入"), value=True, key="ziwei_gregorian")
+            ziwei_year = st.number_input(T("年"), value=2000, min_value=1900, max_value=2100, step=1, key="ziwei_year")
+            ziwei_month = st.number_input(T("月"), value=8, min_value=1, max_value=12, step=1, key="ziwei_month")
+            ziwei_day = st.number_input(T("日"), value=16, min_value=1, max_value=31, step=1, key="ziwei_day")
+        with col2:
+            ziwei_gender_choice = st.radio(T("出生性别"), [T("男 ♂"), T("女 ♀")], horizontal=True, index=0, key="ziwei_gender")
+            
+            # 时辰选择映射
+            time_options = {
+                T("早子时 (23:00-00:59)"): 0,
+                T("丑时 (01:00-02:59)"): 1,
+                T("寅时 (03:00-04:59)"): 2,
+                T("卯时 (05:00-06:59)"): 3,
+                T("辰时 (07:00-08:59)"): 4,
+                T("巳时 (09:00-10:59)"): 5,
+                T("午时 (11:00-12:59)"): 6,
+                T("未时 (13:00-14:59)"): 7,
+                T("申时 (15:00-16:59)"): 8,
+                T("酉时 (17:00-18:59)"): 9,
+                T("戌时 (19:00-20:59)"): 10,
+                T("亥时 (21:00-22:59)"): 11,
+                T("晚子时 (00:00-00:59)"): 12,
+            }
+            ziwei_time_option = st.selectbox(T("时辰"), list(time_options.keys()), index=2, key="ziwei_time")
+        
+        ziwei_calc_btn = st.button(T("计算紫微排盤"), type="primary", key="ziwei_calc")
+        
+        if ziwei_calc_btn:
+            try:
+                # 显示开始计算的消息
+                st.info(T("🔄 開始計算紫微排盤..."))
+                
+                with st.spinner(T("正在計算紫微排盤，請稍候...")):
+                    date_str = f"{ziwei_year}-{ziwei_month}-{ziwei_day}"
+                    gender = T("女") if ziwei_gender_choice.endswith('♀') else T("男")
+                    ziwei_time_index = time_options[ziwei_time_option]
+                    
+                    # 通过子进程调用独立脚本，避免 pythonmonkey 导致 Streamlit 崩溃
+                    env = os.environ.copy()
+                    env["PYTHONIOENCODING"] = "utf-8"
+                    env["PYTHONUTF8"] = "1"
+                    
+                    result_process = subprocess.run(
+                        [sys.executable, str(ziwei_calc_script), 
+                         date_str, str(ziwei_time_index), gender, 
+                         str(ziwei_use_gregorian).lower(), "zh-TW"],
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True,
+                        encoding="utf-8",
+                        errors="replace",
+                        cwd=str(Path(__file__).parent),
+                        env=env,
+                        timeout=30
+                    )
+                    
+                    if result_process.returncode != 0:
+                        error_output = result_process.stderr or result_process.stdout
+                        raise Exception(f"子进程执行失败 (返回码: {result_process.returncode}): {error_output}")
+                    
+                    # 解析 JSON 结果
+                    result_json = json.loads(result_process.stdout.strip())
+                    
+                    if "error" in result_json:
+                        raise Exception(result_json["error"])
+                    
+                    # 使用 pydantic 模型重新构造结果对象
+                    from py_iztro.core.models import AstrolabeModel
+                    result = AstrolabeModel(**result_json)
+                
+                # 显示基本信息
+                st.success(T("✓ 排盘成功"))
+                st.info(T("**基本信息**"))
+                # 查找命宫和身宫位置的主星
+                soul_palace_major_stars = ""
+                body_palace_major_stars = ""
+                for palace in result.palaces:
+                    if palace.earthly_branch == result.earthly_branch_of_soul_palace:
+                        if palace.major_stars:
+                            soul_palace_major_stars = "、".join([
+                                star.name + (f"({star.mutagen})" if star.mutagen else "")
+                                for star in palace.major_stars
+                            ])
+                        elif not palace.major_stars:
+                            # 从对宫借星
+                            opposite_branch_map = {
+                                "子": "午", "午": "子", "丑": "未", "未": "丑",
+                                "寅": "申", "申": "寅", "卯": "酉", "酉": "卯",
+                                "辰": "戌", "戌": "辰", "巳": "亥", "亥": "巳"
+                            }
+                            opposite_branch = opposite_branch_map.get(palace.earthly_branch)
+                            if opposite_branch:
+                                for p in result.palaces:
+                                    if p.earthly_branch == opposite_branch and p.major_stars:
+                                        soul_palace_major_stars = "、".join([
+                                            star.name + (f"({star.mutagen})" if star.mutagen else "")
+                                            for star in p.major_stars
+                                        ]) + "(借對宮)"
+                                        break
+                    if palace.earthly_branch == result.earthly_branch_of_body_palace:
+                        if palace.major_stars:
+                            body_palace_major_stars = "、".join([
+                                star.name + (f"({star.mutagen})" if star.mutagen else "")
+                                for star in palace.major_stars
+                            ])
+                        elif not palace.major_stars:
+                            # 从对宫借星
+                            opposite_branch_map = {
+                                "子": "午", "午": "子", "丑": "未", "未": "丑",
+                                "寅": "申", "申": "寅", "卯": "酉", "酉": "卯",
+                                "辰": "戌", "戌": "辰", "巳": "亥", "亥": "巳"
+                            }
+                            opposite_branch = opposite_branch_map.get(palace.earthly_branch)
+                            if opposite_branch:
+                                for p in result.palaces:
+                                    if p.earthly_branch == opposite_branch and p.major_stars:
+                                        body_palace_major_stars = "、".join([
+                                            star.name + (f"({star.mutagen})" if star.mutagen else "")
+                                            for star in p.major_stars
+                                        ]) + "(借對宮)"
+                                        break
+                
+                info_text = f"""
+性別: {result.gender}
+公曆: {result.solar_date}
+農曆: {result.lunar_date}
+干支: {result.chinese_date}
+時辰: {result.time} ({result.time_range})
+星座: {result.sign}
+生肖: {result.zodiac}
+命主: {result.soul} (命宮地支: {result.earthly_branch_of_soul_palace}, 主星: {soul_palace_major_stars or '無'})
+身主: {result.body} (身宮地支: {result.earthly_branch_of_body_palace}, 主星: {body_palace_major_stars or '無'})
+五行局: {result.five_elements_class}
+"""
+                st.code(info_text, language="text")
+                
+                # 显示星座解释
+                if result.sign in zodiac_12_traits:
+                    zodiac_info = zodiac_12_traits[result.sign]
+                    st.subheader(f"【{result.sign}】星座解釋")
+                    st.write(f"**意象：**\n{zodiac_info['意象']}")
+                    st.write(f"\n**性情總結：**\n{zodiac_info['性情總結']}")
+                    st.divider()
+                
+                # 显示命宫主星的解释
+                if soul_palace_major_stars and soul_palace_major_stars != '無':
+                    # 提取主星名称（去掉四化和借對宮标记）
+                    major_star_names = []
+                    for star_str in soul_palace_major_stars.replace("(借對宮)", "").split("、"):
+                        # 提取星名（去掉四化标记如"紫微(科)"）
+                        star_name = star_str.split("(")[0].strip()
+                        if star_name and star_name in ziwei_14stars_imagery:
+                            major_star_names.append(star_name)
+                    
+                    # 显示每个主星的解释（默认展开）
+                    for star_name in major_star_names:
+                        if star_name in ziwei_14stars_imagery:
+                            star_info = ziwei_14stars_imagery[star_name]
+                            st.subheader(f"【{star_name}】主星解釋")
+                            st.write(f"**意象：**\n{star_info['意象']}")
+                            st.write(f"\n**重點：**\n{star_info['重點']}")
+                            st.divider()  # 添加分隔线
+                
+                # 显示十二宫
+                st.info(T("**十二宮**"))
+                
+                # 对宫对应关系（地支）
+                opposite_palace_map = {
+                    "子": "午", "午": "子",
+                    "丑": "未", "未": "丑",
+                    "寅": "申", "申": "寅",
+                    "卯": "酉", "酉": "卯",
+                    "辰": "戌", "戌": "辰",
+                    "巳": "亥", "亥": "巳"
+                }
+                
+                palace_info = []
+                for palace in result.palaces:
+                    # 处理主星：如果本宫没有主星，从对宫借星
+                    if not palace.major_stars:
+                        # 查找对宫
+                        opposite_branch = opposite_palace_map.get(palace.earthly_branch)
+                        opposite_palace = None
+                        if opposite_branch:
+                            for p in result.palaces:
+                                if p.earthly_branch == opposite_branch:
+                                    opposite_palace = p
+                                    break
+                        
+                        # 如果找到对宫且有主星，则借星
+                        if opposite_palace and opposite_palace.major_stars:
+                            borrowed_stars = "、".join([
+                                star.name + (f"({star.mutagen})" if star.mutagen else "")
+                                for star in opposite_palace.major_stars
+                            ])
+                            major_stars = f"{borrowed_stars}(借對宮)"
+                        else:
+                            major_stars = ""
+                    else:
+                        major_stars = "、".join([
+                            star.name + (f"({star.mutagen})" if star.mutagen else "")
+                            for star in palace.major_stars
+                        ])
+                    
+                    minor_stars = "、".join([
+                        star.name + (f"({star.mutagen})" if star.mutagen else "")
+                        for star in palace.minor_stars
+                    ])
+                    adjective_stars = "、".join([star.name for star in palace.adjective_stars])
+                    
+                    # 替换宫位名称：僕役 -> 部屬，官祿 -> 事業
+                    palace_name = palace.name.replace("僕役", "部屬").replace("官祿", "事業")
+                    palace_text = f"【{palace_name}】"
+                    if palace.is_body_palace:
+                        palace_text += " 身宮"
+                    if palace.is_original_palace:
+                        palace_text += " 來因宮"
+                    palace_text += f"\n  地支: {palace.earthly_branch}  天干: {palace.heavenly_stem}"
+                    if major_stars:
+                        palace_text += f"\n  主星: {major_stars}"
+                    if minor_stars:
+                        palace_text += f"\n  輔星: {minor_stars}"
+                    if adjective_stars:
+                        palace_text += f"\n  雜耀: {adjective_stars}"
+                    palace_text += f"\n  大限: {palace.decadal.heavenly_stem}{palace.decadal.earthly_branch} ({palace.decadal.range[0]}-{palace.decadal.range[1]}歲)"
+                    palace_info.append(palace_text)
+                
+                st.code("\n".join(palace_info), language="text")
+                    
+            except subprocess.TimeoutExpired:
+                st.error(T("⚠️ 计算超时（超过30秒）。请稍后重试。"))
+            except json.JSONDecodeError as e:
+                st.error(f"{T('JSON解析失败')}: {str(e)}")
+                st.info(T("请检查 ziwei_calc.py 脚本是否正确执行。"))
+            except Exception as e:
+                import traceback
+                error_msg = str(e)
+                st.error(f"{T('计算失败')}: {error_msg}")
+                with st.expander(T("查看错误详情"), expanded=True):
+                    st.exception(e)
+                    st.code(traceback.format_exc())
+                
+                st.info(T("请检查输入的日期是否有效，或尝试使用农历输入。"))
+
+
+with tabs[2]:
     st.subheader(T("合婚查询"))
     mode = st.radio(T("合婚类型"), [T("生肖"), T("日柱(六十甲子)")], horizontal=True, index=0)
 

@@ -784,40 +784,52 @@ _day_pillar = ''.join(zhus[2])  # 例如：'丙寅'
 if _day_pillar in day_pillar_detail:
     _orig_print("="*120)
     _orig_print("日柱解讀：【{}】".format(_day_pillar))
-    # 打印详细内容，跳过第一行如果它以"XX日生"开头
+    # 打印详细内容，跳过前两段（"詩云"段和"XX日"描述段）
     detail_content = day_pillar_detail[_day_pillar]
-    lines = detail_content.split('\n')
-    # 跳过第一行如果它包含"日生"
-    content_lines = lines[1:] if lines and '日生' in lines[0] else lines
-    # 处理内容，按句子分割长段落并去掉空行
-    max_length = 55  # 每段最大长度约55字符
-    for line in content_lines:
-        line = line.strip()
-        if not line:  # 跳过空行
+    # 按句号分割成句子
+    sentences = re.split(r'([。！？])', detail_content)
+    all_sentences = []
+    for i in range(0, len(sentences), 2):
+        if i < len(sentences):
+            sentence = sentences[i]
+            if i + 1 < len(sentences):
+                sentence += sentences[i + 1]
+            if sentence.strip():
+                all_sentences.append(sentence.strip())
+    
+    # 跳过前两段
+    skip_count = 0
+    for sentence in all_sentences:
+        # 跳过第一段：以"詩云:"开头的句子
+        if skip_count == 0 and sentence.startswith('詩云:'):
+            skip_count += 1
             continue
-        # 先按句号、感叹号、问号等标点符号分割成完整句子
-        sentences = re.split(r'([。！？])', line)
-        all_sentences = []
-        for i in range(0, len(sentences), 2):
-            if i < len(sentences):
-                sentence = sentences[i]
-                if i + 1 < len(sentences):
-                    sentence += sentences[i + 1]
-                all_sentences.append(sentence)
-        
-        # 处理每个句子，只在超过长度限制时分割
-        current_para = ''
-        for sentence in all_sentences:
-            if not sentence.strip():
-                continue
-            # 如果当前段落加上新句子超过长度限制，先打印当前段落
-            if current_para and len(current_para) + len(sentence) > max_length:
-                _orig_print(current_para)
-                current_para = sentence.lstrip()
+        # 跳过第二段：包含"日。"或"日，"并且包含"臨"的句子
+        if skip_count == 1 and ('日。' in sentence or '日，' in sentence) and '臨' in sentence:
+            skip_count += 1
+            continue
+        # 从第三段开始输出
+        if skip_count >= 2:
+            # 处理内容，按句子分割长段落并去掉空行
+            max_length = 55  # 每段最大长度约55字符
+            # 如果句子超过长度限制，按分号、逗号进一步分割
+            if len(sentence) > max_length:
+                parts = re.split(r'([；，])', sentence)
+                temp_para = ''
+                for j in range(0, len(parts), 2):
+                    if j < len(parts):
+                        part = parts[j]
+                        if j + 1 < len(parts):
+                            part += parts[j + 1]
+                        if temp_para and len(temp_para) + len(part) > max_length:
+                            _orig_print(temp_para)
+                            temp_para = part.lstrip()
+                        else:
+                            temp_para += part
+                if temp_para:
+                    _orig_print(temp_para)
             else:
-                current_para += sentence
-        if current_para:
-            _orig_print(current_para)
+                _orig_print(sentence)
 
 print("-"*120)
 print("{1:{0}^15s}{2:{0}^15s}{3:{0}^15s}{4:{0}^15s}".format(chr(12288), '【年】{}:{}{}{}'.format(temps[gans.year],temps[zhis.year],ten_deities[gans.year].inverse['建'], gan_zhi_he(zhus[0])), 
@@ -1322,7 +1334,7 @@ if '比' in gan_shens:
         print("月柱干支比肩：争夫感情丰富。30岁以前钱不够花。")
         
     if gan_shens[0] == '比':
-        print("年干比：上面有哥或姐，出身一般。")
+        print("年干比：與同輩之間有較多的合作或競爭。")
         
     if zhi_shens[2] == '比':
         print("基52女坐比透比:夫妻互恨 丙辰 辛卯 辛酉 甲午。")  

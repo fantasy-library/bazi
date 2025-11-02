@@ -4,4 +4,6 @@ lunar_python>=1.2
 colorama>=0.4
 sxtwl>=2.0
 opencc-python-reimplemented>=0.1.7
+py-iztro>=0.1.5
+pythonmonkey>=1.1.0
 
