@@ -859,15 +859,29 @@ if _day_pillar in day_pillar_detail:
     
     # 跳过前两段
     skip_count = 0
-    for sentence in all_sentences:
+    for i, sentence in enumerate(all_sentences):
         # 跳过第一段：以"詩云:"开头的句子
         if skip_count == 0 and sentence.startswith('詩云:'):
             skip_count += 1
             continue
         # 跳过第二段：包含"日。"或"日，"并且包含"臨"的句子
-        if skip_count == 1 and ('日。' in sentence or '日，' in sentence) and '臨' in sentence:
-            skip_count += 1
-            continue
+        # 如果第二段被分割了，检查当前句子和下一句是否组合起来包含"日。"或"日，"和"臨"
+        if skip_count == 1:
+            # 检查当前句子
+            has_ri = ('日。' in sentence or '日，' in sentence)
+            has_lin = '臨' in sentence
+            
+            # 如果当前句子包含"日。"或"日，"，检查它和下一句的组合
+            if has_ri and not has_lin and i + 1 < len(all_sentences):
+                combined = sentence + all_sentences[i + 1]
+                if '臨' in combined:
+                    skip_count += 1
+                    continue
+            
+            # 如果当前句子同时包含"日。"或"日，"和"臨"
+            if has_ri and has_lin:
+                skip_count += 1
+                continue
         # 从第三段开始输出
         if skip_count >= 2:
             # 处理内容，按句子分割长段落并去掉空行
