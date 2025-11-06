@@ -359,7 +359,7 @@ out = "{} {}:{} {} {} {}".format(out, "强弱", strong, "中值29", "强根:", '
 print('\033[1;36;40m' + ' '.join(list(gans)), ' '*5, ' '.join(list(gan_shens)) + '\033[0m',' '*3, out)
 
 # 输出详细分数信息
-shen_qiangruo = "【身強】" if not weak else "【身弱】"
+shen_qiangruo = "【身強】" if strong > 29 else "【身弱】"
 print("五行分數", scores, "   八字強弱：", strong, "通常>29爲強，需要參考月份、坐支等", shen_qiangruo)
 
 temps_scores = temps[gans.year] + temps[gans.month] + temps[me] + temps[gans.time] + temps[zhis.year] + temps[zhis.month]*2 + temps[zhis.day] + temps[zhis.time]
@@ -2703,8 +2703,6 @@ if cai in births and guan in births:
 else:
     birth = '一般'
 
-print("出身:", birth)    
-
 guan_num = shens.count("官")
 sha_num = shens.count("杀")
 cai_num = shens.count("财")
@@ -2872,7 +2870,7 @@ if ge == '财' or ge == '才':
 # 财库分析
 if ten_deities[ten_deities[me].inverse["财"]]['库'][-1] in zhis:
     print("财临库墓: 一生财帛丰厚，因财致官, 天干透土更佳")   
-if cai_num < 2 and (('劫' in shens) or ('比' in shens)):
+if cai_num < 2 and strong > 29 and (('劫' in shens) or ('比' in shens)):
     print("财少身强，柱有比劫，不为福")   
 
 
