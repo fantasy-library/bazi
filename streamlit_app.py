@@ -7,12 +7,19 @@ import subprocess
 import re
 import json
 from pathlib import Path
+from datetime import datetime
 
 import streamlit as st
 try:
     from opencc import OpenCC
 except Exception:
     OpenCC = None  # graceful fallback if not installed
+
+try:
+    from lunar_python import Lunar, Solar
+except Exception:
+    Lunar = None
+    Solar = None
 
 
 # 已移除：十四主星意象字典（紫微排盤功能已移除，因部署环境缺少npm/Node.js）
@@ -161,7 +168,108 @@ use_tr = True  # 強制繁體顯示
 def T(s: str) -> str:
     return to_tr(s) if use_tr else s
 
+# 获取当前农历日期的函数
+def get_current_lunar_date():
+    """获取当前农历日期"""
+    try:
+        if Lunar and Solar:
+            today = datetime.now()
+            solar = Solar.fromYmdHms(today.year, today.month, today.day, today.hour, today.minute, today.second)
+            lunar = solar.getLunar()
+            ba = lunar.getEightChar()
+            gan_year = ba.getYearGan()
+            zhi_year = ba.getYearZhi()
+            gan_month = ba.getMonthGan()
+            zhi_month = ba.getMonthZhi()
+            gan_day = ba.getDayGan()
+            zhi_day = ba.getDayZhi()
+            return f"{gan_year}{zhi_year}年{gan_month}{zhi_month}月{gan_day}{zhi_day}日"
+    except:
+        pass
+    return ""
+
 st.title(T("八字论命，仅作参考"))
+
+# 问候语和当前日期 - 放在标题下方，支持自动刷新
+current_date = datetime.now()
+lunar_date = get_current_lunar_date()
+
+# 创建日期显示容器，支持自动刷新
+date_container = st.container()
+with date_container:
+    date_placeholder = st.empty()
+    
+    # 初始显示日期
+    date_placeholder.markdown(
+        f"""
+        <div id="date-display" style="margin-bottom: 30px;">
+            <p style="font-size: 18px; color: #333; margin-bottom: 5px;">
+                您好，今天是西元{current_date.year}年{current_date.month}月{current_date.day}日。
+            </p>
+            {f'<p id="lunar-date" style="font-size: 18px; color: #1E88E5; font-weight: 500;">{lunar_date}</p>' if lunar_date else ''}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    # 添加自动刷新日期时间的 JavaScript
+    auto_refresh_js = """
+    <script>
+    function updateDate() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth() + 1;
+        const day = now.getDate();
+        
+        // 更新公历日期
+        const dateDisplay = document.getElementById('date-display');
+        if (dateDisplay) {
+            const dateText = dateDisplay.querySelector('p');
+            if (dateText) {
+                dateText.textContent = `您好，今天是西元${year}年${month}月${day}日。`;
+            }
+        }
+        
+        // 注意：农历日期需要服务器端计算，这里只更新公历日期
+        // 如果需要更新农历日期，需要定期刷新整个页面或使用 AJAX 请求
+    }
+    
+    // 每分钟更新一次日期（检查日期是否变化）
+    setInterval(updateDate, 60000);
+    
+    // 页面加载时立即更新一次
+    updateDate();
+    </script>
+    """
+    st.markdown(auto_refresh_js, unsafe_allow_html=True)
+    
+    # 使用 JavaScript 定期检查日期变化并自动刷新页面以更新农历日期
+    date_check_js = """
+    <script>
+    let lastDate = new Date().toDateString();
+    
+    function checkDateChange() {
+        const now = new Date();
+        const currentDate = now.toDateString();
+        
+        // 如果日期变化了，刷新页面以更新农历日期
+        if (currentDate !== lastDate) {
+            lastDate = currentDate;
+            // 延迟刷新，避免频繁刷新
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }
+    }
+    
+    // 每分钟检查一次日期变化（检查是否跨日）
+    setInterval(checkDateChange, 60000);
+    
+    // 页面加载时也检查一次
+    checkDateChange();
+    </script>
+    """
+    st.markdown(date_check_js, unsafe_allow_html=True)
 
 # 左侧参考资料栏
 with st.sidebar:
@@ -266,7 +374,7 @@ with st.sidebar:
         st.components.v1.html(copy_html, height=60)
         st.markdown(reference_text)
 
-# Global typography
+# Global typography and styling
 st.markdown(
     """
     <style>
@@ -280,6 +388,28 @@ st.markdown(
         white-space: pre-wrap !important;
         word-break: break-word !important;
     }
+    /* 改进输入框样式 */
+    .stNumberInput > div > div > input {
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        padding: 8px 12px;
+    }
+    .stNumberInput > div > div > input:focus {
+        border-color: #1E88E5;
+        box-shadow: 0 0 0 2px rgba(30, 136, 229, 0.1);
+    }
+    /* 改进按钮样式 */
+    .stButton > button {
+        border-radius: 8px;
+        padding: 10px 24px;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+    .stButton > button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    /* 性别按钮颜色通过 JavaScript 动态设置 */
     </style>
     """,
     unsafe_allow_html=True,
@@ -290,17 +420,102 @@ tabs = st.tabs([T("八字排盘"), T("合婚查询")])
 
 with tabs[0]:
     st.subheader(T("八字排盘"))
+    
+    # 日期时间输入区域
+    st.markdown("### " + T("出生日期时间"))
+    date_cols = st.columns(5)
+    with date_cols[0]:
+        year = st.number_input(T("年"), value=1990, min_value=1850, max_value=2100, step=1, key="year_input")
+    with date_cols[1]:
+        month = st.number_input(T("月"), value=1, min_value=1, max_value=12, step=1, key="month_input")
+    with date_cols[2]:
+        day = st.number_input(T("日"), value=1, min_value=1, max_value=31, step=1, key="day_input")
+    with date_cols[3]:
+        hour = st.number_input(T("时"), value=12, min_value=0, max_value=23, step=1, key="hour_input")
+    with date_cols[4]:
+        minute = st.number_input(T("分"), value=0, min_value=0, max_value=59, step=1, key="minute_input")
+    
+    # 选项和性别选择
     col1, col2 = st.columns(2)
     with col1:
         use_gregorian = st.toggle(T("使用公历输入"), value=True)
-        year = st.number_input(T("年"), value=1990, min_value=1850, max_value=2100, step=1)
-        month = st.number_input(T("月"), value=1, min_value=1, max_value=12, step=1)
-        day = st.number_input(T("日"), value=1, min_value=1, max_value=31, step=1)
-        hour = st.number_input(T("时 (0-23)"), value=12, min_value=0, max_value=23, step=1)
-    with col2:
         is_leap = st.checkbox(T("闰月 (农历专用)"), value=False)
-        gender_choice = st.radio(T("出生性别"), [T("男 ♂"), T("女 ♀")], horizontal=True, index=0)
         advanced_bazi = st.checkbox(T("高级: 直接输入八字(年干支/月干支/日干支/时干支)"))
+    
+    with col2:
+        # 性别选择 - 使用改进的按钮样式
+        st.markdown(T("出生性别"))
+        
+        # 初始化性别选择状态
+        if 'gender' not in st.session_state:
+            st.session_state.gender = 'male'
+        
+        
+        # 使用 JavaScript 动态设置按钮颜色
+        gender_js = """
+        <script>
+        function setGenderButtonColors() {
+            // 查找所有按钮
+            const buttons = document.querySelectorAll('button[data-testid*="baseButton"]');
+            buttons.forEach(btn => {
+                const text = btn.textContent || btn.innerText;
+                if (text.includes('♂')) {
+                    // 男性按钮 - 蓝色
+                    if (btn.getAttribute('data-testid').includes('primary')) {
+                        btn.style.backgroundColor = '#42A5F5';
+                        btn.style.color = 'white';
+                        btn.style.border = '2px solid #1E88E5';
+                        btn.style.boxShadow = '0 4px 8px rgba(66, 165, 245, 0.3)';
+                    } else {
+                        btn.style.backgroundColor = '#E3F2FD';
+                        btn.style.color = '#1565C0';
+                        btn.style.border = '2px solid #42A5F5';
+                    }
+                } else if (text.includes('♀')) {
+                    // 女性按钮 - 粉色
+                    if (btn.getAttribute('data-testid').includes('primary')) {
+                        btn.style.backgroundColor = '#EC407A';
+                        btn.style.color = 'white';
+                        btn.style.border = '2px solid #C2185B';
+                        btn.style.boxShadow = '0 4px 8px rgba(236, 64, 122, 0.3)';
+                    } else {
+                        btn.style.backgroundColor = '#FCE4EC';
+                        btn.style.color = '#C2185B';
+                        btn.style.border = '2px solid #EC407A';
+                    }
+                }
+            });
+        }
+        // 页面加载后执行
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setGenderButtonColors);
+        } else {
+            setGenderButtonColors();
+        }
+        // Streamlit 更新后也执行
+        setTimeout(setGenderButtonColors, 100);
+        setTimeout(setGenderButtonColors, 500);
+        </script>
+        """
+        st.markdown(gender_js, unsafe_allow_html=True)
+        
+        gender_cols = st.columns(2)
+        with gender_cols[0]:
+            # 男性按钮 - 蓝色
+            if st.button("♂ " + T("男"), key="male_btn", use_container_width=True,
+                        type="primary" if st.session_state.gender == 'male' else "secondary"):
+                st.session_state.gender = 'male'
+                st.rerun()
+        
+        with gender_cols[1]:
+            # 女性按钮 - 粉色
+            if st.button("♀ " + T("女"), key="female_btn", use_container_width=True,
+                        type="primary" if st.session_state.gender == 'female' else "secondary"):
+                st.session_state.gender = 'female'
+                st.rerun()
+        
+        # 设置 gender_choice 用于后续逻辑
+        gender_choice = T("男 ♂") if st.session_state.gender == 'male' else T("女 ♀")
 
         if advanced_bazi:
             st.info(T("按照 README 用法，四项分别输入天干、地支。如不熟悉请勿勾选该项。"))
@@ -336,8 +551,8 @@ with tabs[0]:
                 args.append("-g")
             if is_leap:
                 args.append("-r")
-            # female flag
-            if gender_choice.endswith('♀'):
+            # female flag - 使用session state来跟踪性别选择
+            if st.session_state.gender == 'female':
                 args.append("-n")
 
         output = strip_ansi(run_script(args))

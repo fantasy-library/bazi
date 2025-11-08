@@ -390,12 +390,188 @@ caiku_note = " 财库：{}({})".format("有" if present_kus else "无", ''.join(
 remark = " *备注：仅代表在运势（储蓄/赚钱能力）上的潜在优势，不等同于实际财富结论。"
 print('\033[1;36;40m' + ' '.join(list(zhis)), ' '*5, ' '.join(list(zhi_shens)) + '\033[0m', ' '*3, out, "四柱：" + ' '.join([''.join(item) for item in zip(gans, zhis)]) + caiku_note + remark,)
 
-# 立即輸出：月柱十神解讀（根據月支十神）
+# 十神名称映射
 ten_god_title_map = {
     '官': '正官', '杀': '七杀', '印': '正印', '枭': '偏印',
     '财': '正财', '才': '偏财', '食': '食神', '伤': '伤官',
     '比': '比肩', '劫': '劫财',
 }
+
+# 计算安坐、相生、相剋（天干和地支分开计算）
+# 安坐：天干的十神和地支的十神
+an_zuo_gan = []  # 天干的十神
+an_zuo_zhi = []  # 地支的十神
+for i in range(4):
+    if i == 2:  # 日柱，天干是日主
+        an_zuo_gan.append('--')
+    else:
+        an_zuo_gan.append(ten_deities[me][gans[i]])
+    # 地支主气的十神
+    zhi_main_gan = max(zhi5[zhis[i]], key=zhi5[zhis[i]].get)
+    an_zuo_zhi.append(ten_deities[me][zhi_main_gan])
+
+# 相生：天干之间的相生关系和地支之间的相生关系（分开计算）
+xiang_sheng_gan_set = set()  # 天干之间的相生关系（使用set去重）
+xiang_sheng_zhi_set = set()  # 地支之间的相生关系（使用set去重）
+
+# 天干之间的相生关系
+gan_items = []
+gan_wuhangs = []
+for i in range(4):
+    gan_items.append((i, gans[i]))
+    gan_wuhangs.append(gan5[gans[i]])
+
+# 五行相生关系
+sheng_map = {'金': '水', '水': '木', '木': '火', '火': '土', '土': '金'}
+for i in range(len(gan_items)):
+    for j in range(i + 1, len(gan_items)):
+        wu1 = gan_wuhangs[i]
+        wu2 = gan_wuhangs[j]
+        if sheng_map.get(wu1) == wu2:  # wu1生wu2
+            shen1 = ten_deities[me][gan_items[i][1]]
+            shen2 = ten_deities[me][gan_items[j][1]]
+            shen1_name = ten_god_title_map.get(shen1, shen1)
+            shen2_name = ten_god_title_map.get(shen2, shen2)
+            xiang_sheng_gan_set.add(f"{shen1_name}生{shen2_name}")
+        elif sheng_map.get(wu2) == wu1:  # wu2生wu1
+            shen1 = ten_deities[me][gan_items[j][1]]
+            shen2 = ten_deities[me][gan_items[i][1]]
+            shen1_name = ten_god_title_map.get(shen1, shen1)
+            shen2_name = ten_god_title_map.get(shen2, shen2)
+            xiang_sheng_gan_set.add(f"{shen1_name}生{shen2_name}")
+
+xiang_sheng_gan = sorted(list(xiang_sheng_gan_set))  # 转换为列表并排序
+
+# 地支之间的相生关系
+zhi_items = []
+zhi_wuhangs_list = []
+for i in range(4):
+    zhi_items.append((i, zhis[i]))
+    zhi_wuhangs_list.append(zhi_wuhangs[zhis[i]])
+
+for i in range(len(zhi_items)):
+    for j in range(i + 1, len(zhi_items)):
+        wu1 = zhi_wuhangs_list[i]
+        wu2 = zhi_wuhangs_list[j]
+        if sheng_map.get(wu1) == wu2:  # wu1生wu2
+            zhi_main_gan1 = max(zhi5[zhi_items[i][1]], key=zhi5[zhi_items[i][1]].get)
+            zhi_main_gan2 = max(zhi5[zhi_items[j][1]], key=zhi5[zhi_items[j][1]].get)
+            shen1 = ten_deities[me][zhi_main_gan1]
+            shen2 = ten_deities[me][zhi_main_gan2]
+            shen1_name = ten_god_title_map.get(shen1, shen1)
+            shen2_name = ten_god_title_map.get(shen2, shen2)
+            xiang_sheng_zhi_set.add(f"{shen1_name}生{shen2_name}")
+        elif sheng_map.get(wu2) == wu1:  # wu2生wu1
+            zhi_main_gan1 = max(zhi5[zhi_items[j][1]], key=zhi5[zhi_items[j][1]].get)
+            zhi_main_gan2 = max(zhi5[zhi_items[i][1]], key=zhi5[zhi_items[i][1]].get)
+            shen1 = ten_deities[me][zhi_main_gan1]
+            shen2 = ten_deities[me][zhi_main_gan2]
+            shen1_name = ten_god_title_map.get(shen1, shen1)
+            shen2_name = ten_god_title_map.get(shen2, shen2)
+            xiang_sheng_zhi_set.add(f"{shen1_name}生{shen2_name}")
+
+xiang_sheng_zhi = sorted(list(xiang_sheng_zhi_set))  # 转换为列表并排序
+
+# 相剋：天干之间的相克关系和地支之间的相克关系（分开计算）
+xiang_ke_gan_set = set()  # 天干之间的相克关系（使用set去重）
+xiang_ke_zhi_set = set()  # 地支之间的相克关系（使用set去重）
+
+# 五行相克关系
+ke_map = {'金': '木', '木': '土', '土': '水', '水': '火', '火': '金'}
+for i in range(len(gan_items)):
+    for j in range(i + 1, len(gan_items)):
+        wu1 = gan_wuhangs[i]
+        wu2 = gan_wuhangs[j]
+        if ke_map.get(wu1) == wu2:  # wu1克wu2
+            shen1 = ten_deities[me][gan_items[i][1]]
+            shen2 = ten_deities[me][gan_items[j][1]]
+            shen1_name = ten_god_title_map.get(shen1, shen1)
+            shen2_name = ten_god_title_map.get(shen2, shen2)
+            xiang_ke_gan_set.add(f"{shen1_name}剋{shen2_name}")
+
+for i in range(len(zhi_items)):
+    for j in range(i + 1, len(zhi_items)):
+        wu1 = zhi_wuhangs_list[i]
+        wu2 = zhi_wuhangs_list[j]
+        if ke_map.get(wu1) == wu2:  # wu1克wu2
+            zhi_main_gan1 = max(zhi5[zhi_items[i][1]], key=zhi5[zhi_items[i][1]].get)
+            zhi_main_gan2 = max(zhi5[zhi_items[j][1]], key=zhi5[zhi_items[j][1]].get)
+            shen1 = ten_deities[me][zhi_main_gan1]
+            shen2 = ten_deities[me][zhi_main_gan2]
+            shen1_name = ten_god_title_map.get(shen1, shen1)
+            shen2_name = ten_god_title_map.get(shen2, shen2)
+            xiang_ke_zhi_set.add(f"{shen1_name}剋{shen2_name}")
+
+xiang_ke_gan = sorted(list(xiang_ke_gan_set))  # 转换为列表并排序
+xiang_ke_zhi = sorted(list(xiang_ke_zhi_set))  # 转换为列表并排序
+
+# 输出安坐、相生、相剋（天干和地支分开显示）
+print("\n命局分析")
+# 安坐：天干列显示天干的十神，地支列显示地支的十神
+print("安坐\t天干\t||\t地支")
+print("\t", end='')
+# 天干列
+gan_an_zuo_str = ""
+for i in range(4):
+    if an_zuo_gan[i] in ten_god_title_map:
+        gan_an_zuo_str += ten_god_title_map[an_zuo_gan[i]] + " \t"
+    else:
+        gan_an_zuo_str += an_zuo_gan[i] + " \t"
+print(gan_an_zuo_str.rstrip('\t '), end='')
+# 使用固定数量的制表符对齐"||"（确保在同一列）
+print('\t\t', end='')  # 固定2个制表符
+# 分隔符
+print("||\t", end='')
+# 地支列
+for i in range(4):
+    if an_zuo_zhi[i] in ten_god_title_map:
+        print(ten_god_title_map[an_zuo_zhi[i]], end=' \t' if i < 3 else ' \n')
+    else:
+        print(an_zuo_zhi[i], end=' \t' if i < 3 else ' \n')
+
+# 相生：天干列显示天干之间的相生关系，地支列显示地支之间的相生关系
+print("相生\t", end='')
+# 天干列
+if xiang_sheng_gan:
+    gan_sheng_str = ""
+    for i, sheng in enumerate(xiang_sheng_gan):
+        gan_sheng_str += sheng + " \t" if i < len(xiang_sheng_gan) - 1 else sheng + " \t"
+    print(gan_sheng_str.rstrip('\t '), end='')
+    # 使用固定数量的制表符对齐"||"
+    print('\t\t', end='')
+else:
+    print("--", end='\t\t')
+# 分隔符
+print("||\t", end='')
+# 地支列
+if xiang_sheng_zhi:
+    for i, sheng in enumerate(xiang_sheng_zhi):
+        print(sheng, end=' \t' if i < len(xiang_sheng_zhi) - 1 else ' \n')
+else:
+    print("--")
+
+# 相剋：天干列显示天干之间的相克关系，地支列显示地支之间的相克关系
+print("相剋\t", end='')
+# 天干列
+if xiang_ke_gan:
+    gan_ke_str = ""
+    for i, ke in enumerate(xiang_ke_gan):
+        gan_ke_str += ke + " \t" if i < len(xiang_ke_gan) - 1 else ke + " \t"
+    print(gan_ke_str.rstrip('\t '), end='')
+    # 使用固定数量的制表符对齐"||"
+    print('\t\t', end='')
+else:
+    print("--", end='\t\t')
+# 分隔符
+print("||\t", end='')
+# 地支列
+if xiang_ke_zhi:
+    for i, ke in enumerate(xiang_ke_zhi):
+        print(ke, end=' \t' if i < len(xiang_ke_zhi) - 1 else ' \n')
+else:
+    print("--")
+
+# 立即輸出：月柱十神解讀（根據月支十神）
 ten_god_detail = {
     '正印': (
         '【正印】',
@@ -603,16 +779,44 @@ ten_god_category_detail = {
 
 _mdc = zhi_shens[1]
 _mdt = ten_god_title_map.get(_mdc)
+# 创建十神名称到shens2字符的映射
+ten_god_to_char = {
+    '正官': '官', '七杀': '杀', '正印': '印', '偏印': '枭',
+    '正财': '财', '偏财': '才', '食神': '食', '伤官': '伤',
+    '比肩': '比', '劫财': '劫',
+}
 if _mdt and _mdt in ten_god_detail:
     _orig_print("\n" + "="*120)
-    _orig_print("月柱十神解讀：【{}】".format(_mdt))
+    # 如果该十神总数>=3，显示总数
+    _char = ten_god_to_char.get(_mdt)
+    if _char and shens2.count(_char) >= 3:
+        _orig_print("月柱十神解讀：【{}】 (總數(含藏干): {})".format(_mdt, shens2.count(_char)))
+    else:
+        _orig_print("月柱十神解讀：【{}】".format(_mdt))
     for _line in ten_god_detail[_mdt][1:]:  # 跳過內文首行標題，避免重複
         _orig_print(_line)
     _orig_print("="*120)
     # 顯示分類解讀
     _category = ten_god_category_map.get(_mdt)
     if _category and _category in ten_god_category_detail:
-        _orig_print("十神分類解讀：【{}】".format(_category))
+        # 创建分类到字符的映射，用于统计总数
+        category_to_chars = {
+            '比劫': ('比', '劫'),
+            '食傷': ('食', '伤'),
+            '財星': ('财', '才'),
+            '印綬': ('印', '枭'),
+            '官殺': ('官', '杀'),
+        }
+        # 如果该分类总数>=3，显示总数
+        chars = category_to_chars.get(_category)
+        if chars:
+            total_count = shens2.count(chars[0]) + shens2.count(chars[1])
+            if total_count >= 3:
+                _orig_print("十神分類解讀：【{}】 (總數(含藏干): {})".format(_category, total_count))
+            else:
+                _orig_print("十神分類解讀：【{}】".format(_category))
+        else:
+            _orig_print("十神分類解讀：【{}】".format(_category))
         # 移除空行（连续的换行符）
         _category_text = ten_god_category_detail[_category]
         # 将多个连续换行符替换为单个换行符，但保留单个换行符
