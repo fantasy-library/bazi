@@ -137,6 +137,43 @@ def collapse_duplicates(text: str) -> str:
     return "\n".join(result)
 
 
+def format_output(text: str) -> str:
+    """Centralize output sanitization and normalization for display.
+
+    Steps:
+    - strip ANSI sequences
+    - remove known citation tokens
+    - remove unwanted output lines (大運、流年 etc)
+    - convert to traditional if requested 
+    - collapse duplicate adjacent lines
+    - normalize repeated blank lines to a single blank line
+    - trim leading/trailing whitespace
+    """
+    if not text:
+        return ""
+    t = strip_ansi(text)
+    t = sanitize_citations(t)
+
+    # Remove unwanted lines like 大運、流年
+    lines = t.splitlines()
+    filtered_lines = []
+    for line in lines:
+        # Skip lines containing 大運 or 流年
+        if '大運' in line or '流年' in line:
+            continue
+        filtered_lines.append(line)
+    t = '\n'.join(filtered_lines)
+
+    if use_tr:
+        t = to_tr(t)
+    t = collapse_duplicates(t)
+    # normalize multiple blank lines to a single blank line
+    t = re.sub(r"\n{3,}", "\n\n", t)
+    # strip leading/trailing whitespace and ensure a trailing newline
+    t = t.strip()
+    return t + "\n"
+
+
 st.set_page_config(page_title="八字排盤，僅作參考", layout="wide")
 
 # Simplified -> Traditional converter with custom rule: keep 丑 (not 醜)
@@ -555,11 +592,7 @@ with tabs[0]:
             if st.session_state.gender == 'female':
                 args.append("-n")
 
-        output = strip_ansi(run_script(args))
-        output = sanitize_citations(output)
-        if use_tr:
-            output = to_tr(output)
-        output = collapse_duplicates(output)
+        output = format_output(run_script(args))
         st.code(output, language="text")
 
 
@@ -572,11 +605,7 @@ with tabs[1]:
         zx = st.selectbox(T("选择你的生肖"), shengxiao_list, index=0)
         if st.button(T("计算合婚")):
             args = ["shengxiao.py", zx]
-            output = strip_ansi(run_script(args))
-            output = sanitize_citations(output)
-            if use_tr:
-                output = to_tr(output)
-            output = collapse_duplicates(output)
+            output = format_output(run_script(args))
             st.code(output, language="text")
     else:
         rizhu_list = [
@@ -590,11 +619,7 @@ with tabs[1]:
         rz = st.selectbox(T("选择你的日柱"), rizhu_list, index=0)
         if st.button(T("计算合婚")):
             args = ["shengxiao.py", rz]
-            output = strip_ansi(run_script(args))
-            output = sanitize_citations(output)
-            if use_tr:
-                output = to_tr(output)
-            output = collapse_duplicates(output)
+            output = format_output(run_script(args))
             st.code(output, language="text")
 
 

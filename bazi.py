@@ -397,8 +397,8 @@ ten_god_title_map = {
     '比': '比肩', '劫': '劫财',
 }
 
-# 计算安坐、相生、相剋（天干和地支分开计算）
-# 安坐：天干的十神和地支的十神
+# 计算相生、相剋（天干和地支分开计算）
+# 天干的十神和地支的十神
 an_zuo_gan = []  # 天干的十神
 an_zuo_zhi = []  # 地支的十神
 for i in range(4):
@@ -505,13 +505,14 @@ for i in range(len(zhi_items)):
 xiang_ke_gan = sorted(list(xiang_ke_gan_set))  # 转换为列表并排序
 xiang_ke_zhi = sorted(list(xiang_ke_zhi_set))  # 转换为列表并排序
 
-# 输出安坐、相生、相剋（天干和地支分开显示）
+# 输出相生、相剋（天干和地支分开显示）
 print("\n命局分析")
 # 安坐：天干列显示天干的十神，地支列显示地支的十神
-print("安坐\t天干\t||\t地支")
+print("格局\t天干\t||\t地支")
 print("\t", end='')
 # 天干列
 gan_an_zuo_str = ""
+print("十神\t", end='')
 for i in range(4):
     if an_zuo_gan[i] in ten_god_title_map:
         gan_an_zuo_str += ten_god_title_map[an_zuo_gan[i]] + " \t"
