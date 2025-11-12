@@ -509,7 +509,6 @@ xiang_ke_zhi = sorted(list(xiang_ke_zhi_set))  # 转换为列表并排序
 print("\n命局分析")
 # 安坐：天干列显示天干的十神，地支列显示地支的十神
 print("格局\t天干\t||\t地支")
-print("\t", end='')
 # 天干列
 gan_an_zuo_str = ""
 print("十神\t", end='')
