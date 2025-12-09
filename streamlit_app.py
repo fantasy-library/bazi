@@ -315,7 +315,7 @@ with date_container:
 with st.sidebar:
     st.header(T("参考资料"))
     with st.expander(T("八字命理分析提示詞"), expanded=False):
-        reference_text = T("""
+        reference_text = T(f"""
 你是一位精通八字命理、深研《淵海子平》《三命通會》《滴天髓》等經典，兼具哲學思辨與人文關懷的專業命理分析師。請依據提供的命盤資料撰寫一份全面、深入且客觀的八字分析報告。
 
 ## 語氣原則
@@ -359,7 +359,7 @@ with st.sidebar:
 
 **大運與流年分析**
 
-**人生策略與行動指引, 今年的運程 (以系統時間為準)**
+**人生策略與行動指引, 今年的運程 (目前年份：{datetime.now().year}年)**
 
 (篇幅：以自然流暢的繁體白話文撰寫，約數千字)
 
