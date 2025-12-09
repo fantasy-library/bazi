@@ -385,10 +385,10 @@ caiku_map = {
 }
 target_kus = caiku_map.get(me, [])
 present_kus = [z for z in target_kus if z in zhis]
-caiku_note = " 财库：{}({})".format("有" if present_kus else "无", ''.join(present_kus) if present_kus else ''.join(target_kus))
-
-remark = " *备注：仅代表在运势（储蓄/赚钱能力）上的潜在优势，不等同于实际财富结论。"
-print('\033[1;36;40m' + ' '.join(list(zhis)), ' '*5, ' '.join(list(zhi_shens)) + '\033[0m', ' '*3, out, "四柱：" + ' '.join([''.join(item) for item in zip(gans, zhis)]) + caiku_note + remark,)
+# 财库判定已移除，不再显示
+# caiku_note = " 财库：{}({})".format("有" if present_kus else "无", ''.join(present_kus) if present_kus else ''.join(target_kus))
+# remark = " *备注：仅代表在运势（储蓄/赚钱能力）上的潜在优势，不等同于实际财富结论。"
+print('\033[1;36;40m' + ' '.join(list(zhis)), ' '*5, ' '.join(list(zhi_shens)) + '\033[0m', ' '*3, out, "四柱：" + ' '.join([''.join(item) for item in zip(gans, zhis)]),)
 
 # 十神名称映射
 ten_god_title_map = {
