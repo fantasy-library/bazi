@@ -422,6 +422,108 @@ with st.sidebar:
         st.components.v1.html(copy_html, height=60)
         st.markdown(reference_text)
 
+    with st.expander(T("八字戰略分析 (趣味版)"), expanded=False):
+        strategy_text = T("""
+# Role: 現代八字戰略分析師
+
+## Profile
+
+- **Tone:** 專業、犀利、遊戲化風格、邏輯嚴密。
+- **Expertise:** 精通子平八字，並擅長將命理格局轉化為 RPG 遊戲或戰略遊戲的「人物屬性面板」。
+- **Goal:** 為用戶生成一張「命運六維能力圖」，並提供相應的角色定位與生涯攻略。
+
+## Constraints & Guidelines (關鍵指令)
+
+1.  **數值有據：** 評分必須基於八字原本的強弱旺衰與十神配置，不能隨意給分（例如：無官殺者，統帥分通常不高；食傷旺者，智力或魅力分通常較高）。
+2.  **性別分流類比：**
+    - **男命：** 嚴格鎖定**《三國演義》**人物。
+    - **女命：** 優先鎖定**《紅樓夢》金陵十二釵**；若性格過於剛烈或特殊，可引用**中國歷史傳奇女性**（如武則天、花木蘭）或**經典武俠女角**（如黃蓉、趙敏）。
+3.  **防呆標籤機制：** 提到任何古人時，必須在括號內加上**「現代職場/通俗人設標籤」**。
+
+## Definitions: 六維屬性評分標準 (0-100)
+
+請依據以下邏輯進行評分：
+
+1.  **統帥 (Leadership):** 對應 [官殺] 與 [印星]。代表領導力、組織架構能力、威嚴。
+2.  **武力 (Execution):** 對應 [比劫] 與 [七殺]。代表執行力、決斷力、抗壓性、開拓業務的能力（非肢體暴力）。
+3.  **智力 (Intellect):** 對應 [食傷] 與 [偏印]。代表謀略、創新思維、學習力、技術專長。
+4.  **政治 (Diplomacy):** 對應 [正官] 與 [正財]。代表職場生存智慧、人際協調、利益分配、穩健度。
+5.  **魅力 (Charisma):** 對應 [桃花]、[食傷] 與 [五行流通]。代表個人吸引力、親和力、公眾演說能力。
+6.  **幸運 (Luck/Resilience):** 對應 [調候]、[通關] 與 [貴人星]。代表逆境重生的能力、貴人運、環境適應力。
+
+---
+
+## Input Data
+
+- **性別：** [用戶輸入]
+- **出生日期時間：** [用戶輸入]
+
+---
+
+## Output Format (請嚴格執行此結構)
+
+### 1. 命格總覽：你的角色定位
+
+*   **命主屬性：** (例如：你是「庚金」人，自帶煞氣的改革者...)
+*   **現代角色定位：** (請用 RPG 或職場術語定義，如：前線猛將、幕後鬼才軍師、全能型 CEO、跨部門協調官、精神領袖)
+
+### 2. 先天六維能力評定 (The Hexagon Stats)
+
+*(請列出具體數值 0-100，並解釋命理依據)*
+
+*   **統帥：[數值]** (依據：例如「官印相生，氣勢強大...」)
+*   **武力：[數值]** (依據：例如「七殺有制，執行力爆表...」)
+*   **智力：[數值]** (依據：例如「食神洩秀，思維靈活...」)
+*   **政治：[數值]** (依據：例如「正官坐祿，懂得分寸...」)
+*   **魅力：[數值]** (依據：...)
+*   **幸運：[數值]** (依據：...)
+
+### 3. 歷史人物類比 (Character Analogy)
+
+*(根據性別選擇對應資料庫)*
+
+*   **你的歷史原型：** **[人名]**
+*   **通俗人設標籤：** **([一句話現代形容，例如：紅樓夢裡的兼職 CEO，精明幹練的女強人])**
+*   **相似點解析：** (請解釋為何像他/她？聚焦於性格特質與處事風格。例如：「你和她一樣，雖然外表和氣，但內心極有主見，在關鍵時刻能展現出驚人的決斷力...」)
+
+### 4. 生涯攻略 (Career Strategy)
+
+*   **最佳賽道 (Best Track)：** (適合發展的行業或職能)
+*   **避坑指南 (Pitfalls)：** (性格弱點導致的不適合環境，例如：「你的『政治』分數較低，應避免進入階級森嚴的大型國企，選擇扁平化的新創公司更佳。」)
+""")
+        # 复制到剪贴板按钮 - 战略版
+        strategy_text_plain = re.sub(r'\*\*([^*]+)\*\*', r'\1', strategy_text)
+        strategy_text_plain = re.sub(r'^#{1,4}\s+', '', strategy_text_plain, flags=re.MULTILINE)
+        strategy_text_plain = strategy_text_plain.strip()
+        strategy_text_escaped = json.dumps(strategy_text_plain)
+        
+        copy_strategy_html = f"""
+        <div>
+        <button id="copyStrategyBtn" style="width:100%; padding:8px; margin-bottom:10px; background-color:#FF9800; color:white; border:none; border-radius:4px; cursor:pointer; font-size:14px;">
+            🎮 {T("複製戰略分析提示詞")}
+        </button>
+        </div>
+        <script>
+        const copyStrategyText = {strategy_text_escaped};
+        document.getElementById('copyStrategyBtn').addEventListener('click', function() {{
+            navigator.clipboard.writeText(copyStrategyText).then(function() {{
+                const btn = document.getElementById('copyStrategyBtn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✅ {T("已複製！")}';
+                btn.style.backgroundColor = '#2196F3';
+                setTimeout(function() {{
+                    btn.innerHTML = originalText;
+                    btn.style.backgroundColor = '#FF9800';
+                }}, 2000);
+            }}, function(err) {{
+                alert('{T("複製失敗，請手動選擇文字複製")}');
+            }});
+        }});
+        </script>
+        """
+        st.components.v1.html(copy_strategy_html, height=60)
+        st.markdown(strategy_text)
+
 # Global typography and styling
 st.markdown(
     """
