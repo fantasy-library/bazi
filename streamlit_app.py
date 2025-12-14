@@ -551,7 +551,7 @@ with st.sidebar:
         st.markdown(strategy_text)
 
     with st.expander(T("天象解讀者 (詩意版)"), expanded=False):
-        weather_text = T("""
+        weather_text = T(f"""
 # Role: 天象解讀者 (The Destiny Weather Forecaster)
 
 ## Profile
@@ -617,6 +617,8 @@ with st.sidebar:
 - **變數 (The Variable):** 當前最不穩定的因素。（現實投射）
 
 ### 4. 【流年氣象預報】 (Yearly Weather Forecast)
+
+*(**(目前年份：{datetime.now().year}年)**)*
 
 - **天氣概況：** （如：多雲轉晴，偶有雷陣雨）
 
