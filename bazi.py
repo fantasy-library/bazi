@@ -3017,6 +3017,86 @@ if ge == '劫':
 
 if ge == '财' or ge == '才':
     print("\n****财分析 **** 喜:旺,印,食,官 忌:比 羊刃 空绝 冲合   财星,天马星,催官星,壮志神")
+    
+    # 月柱财强判断：新增功能
+    print("\n=== 月柱财强分析 ===")
+    # 判断月柱天干地支是否同为正财或偏财
+    month_gan_shen = gan_shens[1]  # 月干十神
+    month_zhi_shen = zhi_shens[1]  # 月支十神
+    
+    # 财强标志
+    cai_qiang_flag = False
+    cai_qiang_type = ""
+    
+    if month_gan_shen in ('财', '才') and month_zhi_shen in ('财', '才'):
+        cai_qiang_flag = True
+        if month_gan_shen == '财' and month_zhi_shen == '财':
+            cai_qiang_type = "正财双显"
+        elif month_gan_shen == '才' and month_zhi_shen == '才':
+            cai_qiang_type = "偏财双显"
+        else:
+            cai_qiang_type = "财星双显"
+        
+        print(f"🔥 月柱财强：{cai_qiang_type} - 天干地支同为财星，财势强盛")
+        print("   特征：具有强烈的财富意识和赚钱能力，善于理财投资，财运亨通")
+        
+        # 检查是否有吉神煞辅助
+        favorable_shas = []
+        
+        # 检查天德贵人
+        if gans[1] in g_shens['天德'][me] or zhis[1] in g_shens['天德'][me]:
+            favorable_shas.append("天德贵人")
+        
+        # 检查太极贵人  
+        if gans[1] in g_shens['太极'][me] or zhis[1] in g_shens['太极'][me]:
+            favorable_shas.append("太极贵人")
+        
+        # 检查金匮贵人
+        if gans[1] in g_shens['金匮'][me] or zhis[1] in g_shens['金匮'][me]:
+            favorable_shas.append("金匮贵人")
+        
+        # 检查太阴贵人
+        if gans[1] in g_shens['太阴'][me] or zhis[1] in g_shens['太阴'][me]:
+            favorable_shas.append("太阴贵人")
+        
+        # 检查将星
+        if zhis[1] in day_shens['将星'][zhis.day]:
+            favorable_shas.append("将星")
+        
+        # 检查禄神（通过禄马贵人日判断）
+        month_gan_zhi = gans[1] + zhis[1]
+        if month_gan_zhi in days60:
+            if "禄" in days60[month_gan_zhi] or "贵" in days60[month_gan_zhi]:
+                favorable_shas.append("禄神")
+        
+        if favorable_shas:
+            print(f"   🌟 吉神助力：{', '.join(favorable_shas)} - 大大增强财运势力")
+            for sha in favorable_shas:
+                if sha == "天德贵人":
+                    print("      • 天德：先天福报深厚，财来自然，贵人相助")
+                elif sha == "太极贵人":
+                    print("      • 太极：聪明好学，有钻劲，喜文史哲，财智双全")
+                elif sha == "金匮":
+                    print("      • 金匮：主财库丰厚，有聚财能力，善于理财投资")
+                elif sha == "太阴":
+                    print("      • 太阴：主女性助力，贵人相助，温和仁慈，财源广进")
+                elif sha == "将星":
+                    print("      • 将星：有理想气度，从容不迫，具领导财运能力")
+                elif sha == "禄神":
+                    print("      • 禄神：俸禄丰厚，财运稳定，衣食无忧")
+        
+        # 财强的发展建议
+        print("   💡 发展建议：")
+        print("      • 适合从事金融、投资、贸易等与财相关的行业")
+        print("      • 善用理财工具，合理配置资产，实现财富增值")
+        print("      • 可考虑与人合作投资，但要避免过度冒险")
+        print("      • 财运虽强，仍需注意积累与节制，避免财来财去")
+        
+    else:
+        print("📝 月柱财强分析：月柱天干地支非同财星，财势中等")
+        print("   建议通过其他柱位或大运流年来提升财运")
+    
+    print("=========================")
     if gan_shens.count('财') + gan_shens.count('才') > 1:
         print('财喜根深，不宜太露，然透一位以清用，格所最喜，不为之露。即非月令用神，若寅透乙、卯透甲之类，一亦不为过，太多则露矣。')
         print('财旺生官，露亦不忌，盖露不忌，盖露以防劫，生官则劫退，譬如府库钱粮，有官守护，即使露白，谁敢劫之？')
