@@ -200,6 +200,13 @@ def to_tr(text: str) -> str:
     t = _cc.convert(text)
     t = t.replace('醜', '丑')
     t = t.replace('幹', '干')
+    t = t.replace('乾支', '干支')
+    t = t.replace('藏乾', '藏干')
+    t = t.replace('天乾', '天干')
+    t = t.replace('日乾', '日干')
+    t = t.replace('月乾', '月干')
+    t = t.replace('年乾', '年干')
+    t = t.replace('時乾', '時干')
     t = t.replace('衝', '沖')
     return t
 
