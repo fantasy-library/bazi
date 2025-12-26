@@ -235,88 +235,69 @@ def get_current_lunar_date():
         pass
     return ""
 
-st.title(T("八字论命，仅作参考"))
-
-# 问候语和当前日期 - 放在标题下方，支持自动刷新
+# 標題與日期顯示 - 整合版（節省空間、美化UI）
 current_date = datetime.now()
 lunar_date = get_current_lunar_date()
 
-# 创建日期显示容器，支持自动刷新
-date_container = st.container()
-with date_container:
-    date_placeholder = st.empty()
-    
-    # 初始显示日期
-    date_placeholder.markdown(
-        f"""
-        <div id="date-display" style="margin-bottom: 30px;">
-            <p style="font-size: 18px; color: #333; margin-bottom: 5px;">
-                您好，今天是西元{current_date.year}年{current_date.month}月{current_date.day}日。
-            </p>
-            {f'<p id="lunar-date" style="font-size: 18px; color: #1E88E5; font-weight: 500;">{lunar_date}</p>' if lunar_date else ''}
+# 創建一個容器來放置標題和日期
+header_container = st.container()
+with header_container:
+    # 使用自定義 HTML/CSS 創建更緊湊、美觀的標題欄
+    st.markdown(f"""
+    <div style="
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        margin-bottom: 20px; 
+        padding: 15px 20px; 
+        background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); 
+        border-radius: 12px; 
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border-left: 5px solid #667eea;
+    ">
+        <div style="display: flex; align-items: center;">
+            <h1 style="margin: 0; font-size: 28px; color: #2d3436; font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; font-weight: 600; letter-spacing: 1px;">
+                📅 {T("八字排盤")}
+            </h1>
         </div>
-        """,
-        unsafe_allow_html=True
-    )
+        <div style="text-align: right;">
+            <div id="solar-date" style="font-size: 14px; color: #636e72; margin-bottom: 2px;">
+                西元{current_date.year}年{current_date.month}月{current_date.day}日
+            </div>
+            {f'<div id="lunar-date" style="font-size: 15px; color: #0984e3; font-weight: 600;">{lunar_date}</div>' if lunar_date else ''}
+        </div>
+    </div>
     
-    # 添加自动刷新日期时间的 JavaScript
-    auto_refresh_js = """
     <script>
-    function updateDate() {
+    function updateDate() {{
         const now = new Date();
         const year = now.getFullYear();
         const month = now.getMonth() + 1;
         const day = now.getDate();
         
-        // 更新公历日期
-        const dateDisplay = document.getElementById('date-display');
-        if (dateDisplay) {
-            const dateText = dateDisplay.querySelector('p');
-            if (dateText) {
-                dateText.textContent = `您好，今天是西元${year}年${month}月${day}日。`;
-            }
-        }
-        
-        // 注意：农历日期需要服务器端计算，这里只更新公历日期
-        // 如果需要更新农历日期，需要定期刷新整个页面或使用 AJAX 请求
-    }
+        const solarDate = document.getElementById('solar-date');
+        if (solarDate) {{
+            solarDate.textContent = `西元${{year}}年${{month}}月${{day}}日`;
+        }}
+    }}
     
-    // 每分钟更新一次日期（检查日期是否变化）
+    // 每分鐘更新一次日期
     setInterval(updateDate, 60000);
     
-    // 页面加载时立即更新一次
-    updateDate();
-    </script>
-    """
-    st.markdown(auto_refresh_js, unsafe_allow_html=True)
-    
-    # 使用 JavaScript 定期检查日期变化并自动刷新页面以更新农历日期
-    date_check_js = """
-    <script>
+    // 檢查日期變更以刷新農曆（伺服器端）
     let lastDate = new Date().toDateString();
-    
-    function checkDateChange() {
+    function checkDateChange() {{
         const now = new Date();
         const currentDate = now.toDateString();
-        
-        // 如果日期变化了，刷新页面以更新农历日期
-        if (currentDate !== lastDate) {
+        if (currentDate !== lastDate) {{
             lastDate = currentDate;
-            // 延迟刷新，避免频繁刷新
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
-        }
-    }
-    
-    // 每分钟检查一次日期变化（检查是否跨日）
+            setTimeout(() => window.location.reload(), 1000);
+        }}
+    }}
     setInterval(checkDateChange, 60000);
-    
-    // 页面加载时也检查一次
-    checkDateChange();
     </script>
-    """
-    st.markdown(date_check_js, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
+
 
 # 左侧提示詞栏
 with st.sidebar:
