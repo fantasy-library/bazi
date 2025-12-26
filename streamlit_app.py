@@ -248,12 +248,7 @@ with header_container:
         display: flex; 
         justify-content: space-between; 
         align-items: center; 
-        margin-bottom: 20px; 
-        padding: 15px 20px; 
-        background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); 
-        border-radius: 12px; 
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        border-left: 5px solid #667eea;
+        margin-bottom: 20px;
     ">
         <div style="display: flex; align-items: center;">
             <h1 style="margin: 0; font-size: 28px; color: #2d3436; font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; font-weight: 600; letter-spacing: 1px;">
@@ -2359,13 +2354,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# 专业标题区域
-st.markdown(f"""
-<div style="text-align: center; padding: 10px 0; margin-bottom: 15px;">
-    <h1 style="color: #1E88E5; font-size: 2em; margin: 0; font-weight: 600;">📅 {T("八字排盘")}</h1>
-</div>
-""", unsafe_allow_html=True)
-
 # 使用容器创建卡片式布局
 with st.container():
     # 日期时间输入区域 - 卡片式设计
@@ -2400,7 +2388,7 @@ with st.container():
     
     with col1:
         st.markdown(f"""
-        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 4px solid #1E88E5; margin-bottom: 15px;">
+        <div style="margin-bottom: 15px;">
             <h4 style="color: #333; margin: 0 0 10px 0; font-size: 1em;">⚙️ {T("输入选项")}</h4>
         </div>
         """, unsafe_allow_html=True)
@@ -2410,7 +2398,7 @@ with st.container():
 
     with col2:
         st.markdown(f"""
-        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 4px solid #EC407A; margin-bottom: 15px;">
+        <div style="margin-bottom: 15px;">
             <h4 style="color: #333; margin: 0 0 10px 0; font-size: 1em;">👤 {T("出生性别")}</h4>
         </div>
         """, unsafe_allow_html=True)
@@ -2419,7 +2407,7 @@ with st.container():
         if 'gender' not in st.session_state:
             st.session_state.gender = 'male'
         
-        # 使用 JavaScript 动态设置按钮颜色
+        # 使用 JavaScript 动态设置按钮颜色 - 增强高亮效果
         gender_js = """
         <script>
         function setGenderButtonColors() {
@@ -2428,27 +2416,33 @@ with st.container():
                 const text = btn.textContent || btn.innerText;
                 if (text.includes('♂')) {
                     if (btn.getAttribute('data-testid').includes('primary')) {
-                        btn.style.backgroundColor = '#42A5F5';
+                        btn.style.backgroundColor = '#1976D2';
                         btn.style.color = 'white';
-                        btn.style.border = '2px solid #1E88E5';
-                        btn.style.boxShadow = '0 4px 12px rgba(66, 165, 245, 0.4)';
-                        btn.style.fontWeight = '600';
+                        btn.style.border = '3px solid #0D47A1';
+                        btn.style.boxShadow = '0 6px 16px rgba(25, 118, 210, 0.5)';
+                        btn.style.fontWeight = '700';
+                        btn.style.transform = 'scale(1.05)';
+                        btn.style.transition = 'all 0.3s ease';
                     } else {
                         btn.style.backgroundColor = '#E3F2FD';
                         btn.style.color = '#1565C0';
                         btn.style.border = '2px solid #42A5F5';
+                        btn.style.opacity = '0.7';
                     }
                 } else if (text.includes('♀')) {
                     if (btn.getAttribute('data-testid').includes('primary')) {
-                        btn.style.backgroundColor = '#EC407A';
+                        btn.style.backgroundColor = '#C2185B';
                         btn.style.color = 'white';
-                        btn.style.border = '2px solid #C2185B';
-                        btn.style.boxShadow = '0 4px 12px rgba(236, 64, 122, 0.4)';
-                        btn.style.fontWeight = '600';
+                        btn.style.border = '3px solid #880E4F';
+                        btn.style.boxShadow = '0 6px 16px rgba(194, 24, 91, 0.5)';
+                        btn.style.fontWeight = '700';
+                        btn.style.transform = 'scale(1.05)';
+                        btn.style.transition = 'all 0.3s ease';
                     } else {
                         btn.style.backgroundColor = '#FCE4EC';
                         btn.style.color = '#C2185B';
                         btn.style.border = '2px solid #EC407A';
+                        btn.style.opacity = '0.7';
                     }
                 }
             });
@@ -2460,6 +2454,8 @@ with st.container():
         }
         setTimeout(setGenderButtonColors, 100);
         setTimeout(setGenderButtonColors, 500);
+        // 监听按钮点击后重新设置样式
+        setInterval(setGenderButtonColors, 1000);
         </script>
         """
         st.markdown(gender_js, unsafe_allow_html=True)
@@ -2552,8 +2548,12 @@ with st.container():
         with st.spinner(T("正在计算八字命盘，请稍候...")):
             output = format_output(run_script(args))
         
-        # 八字排盤結果已移除以節省空間
-        # 結果已計算並存儲在 output 變量中，可用於後續分析
+        # 顯示八字排盤結果
+        if output:
+            st.markdown("---")
+            st.markdown(f"### 📊 {T('八字排盤結果')}")
+            st.markdown(f"```\n{output}\n```")
+            st.session_state.bazi_output = output
 
 
 
