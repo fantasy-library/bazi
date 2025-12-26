@@ -2571,26 +2571,8 @@ with st.container():
         with st.spinner(T("正在计算八字命盘，请稍候...")):
             output = format_output(run_script(args))
         
-        # 美化输出区域
-        st.markdown("---")
-        st.markdown(f"""
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px; border-radius: 10px; margin: 20px 0;">
-            <h3 style="color: white; margin: 0;">📊 {T("八字命盘结果")}</h3>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # 使用代码块显示结果，并添加样式
-        st.markdown(f"""
-        <style>
-        .stCode {{
-            background-color: #1e1e1e;
-            border-radius: 8px;
-            padding: 15px;
-            border: 1px solid #333;
-        }}
-        </style>
-        """, unsafe_allow_html=True)
-        st.code(output, language="text")
+        # 八字排盤結果已移除以節省空間
+        # 結果已計算並存儲在 output 變量中，可用於後續分析
 
 
 
