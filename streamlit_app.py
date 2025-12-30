@@ -856,34 +856,39 @@ with st.sidebar:
 """)
         
         # Append schedule info to liunian_text for copying
-        full_liunian_text = liunian_text + "\\n\\n" + schedule_info
+        full_liunian_text = liunian_text + "\n\n" + schedule_info
 
         # 复制到剪贴板按钮 - 流年預演版
-        liunian_text_plain = re.sub(r'\*\*([^*]+)\*\*', r'\\1', full_liunian_text)
+        liunian_text_plain = re.sub(r'\*\*([^*]+)\*\*', r'\1', full_liunian_text)
         liunian_text_plain = re.sub(r'^#{1,4}\s+', '', liunian_text_plain, flags=re.MULTILINE)
         liunian_text_plain = liunian_text_plain.strip()
         liunian_text_escaped = json.dumps(liunian_text_plain)
         
+        # Pre-translate button text
+        copy_button_text = T("複製流年預演提示詞")
+        copied_text = T("已複製！")
+        copy_failed_text = T("複製失敗，請手動選擇文字複製")
+        
         copy_liunian_html = f"""
         <div>
         <button id="copyLiunianBtn" style="width:100%; padding:8px; margin-bottom:10px; background-color:#9C27B0; color:white; border:none; border-radius:4px; cursor:pointer; font-size:14px;">
-            📅 {{T("複製流年預演提示詞")}}
+            📅 {copy_button_text}
         </button>
         </div>
         <script>
-        const copyLiunianText = {{liunian_text_escaped}};
+        const copyLiunianText = {liunian_text_escaped};
         document.getElementById('copyLiunianBtn').addEventListener('click', function() {{
             navigator.clipboard.writeText(copyLiunianText).then(function() {{
                 const btn = document.getElementById('copyLiunianBtn');
                 const originalText = btn.innerHTML;
-                btn.innerHTML = '✅ {{T("已複製！")}}';
+                btn.innerHTML = '✅ {copied_text}';
                 btn.style.backgroundColor = '#2196F3';
                 setTimeout(function() {{
                     btn.innerHTML = originalText;
                     btn.style.backgroundColor = '#9C27B0';
                 }}, 2000);
             }}, function(err) {{
-                alert('{{T("複製失敗，請手動選擇文字複製")}}');
+                alert('{copy_failed_text}');
             }});
         }});
         </script>
