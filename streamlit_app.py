@@ -693,9 +693,43 @@ with st.sidebar:
     with st.expander(T("📅 流年預演"), expanded=False):
         st.caption(T("請輸入您想預測的流年年份，系統將自動計算該年的流月干支表並附在提示詞中。"))
         
+        # Add custom CSS for prominent year input
+        st.markdown("""
+        <style>
+        .liunian-year-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .liunian-year-label {
+            font-size: 18px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        div[data-testid="stNumberInput"] > div > div > input {
+            font-size: 20px !important;
+            font-weight: 700 !important;
+            padding: 12px 16px !important;
+            border: 3px solid #fff !important;
+            border-radius: 8px !important;
+            background-color: white !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        st.markdown(f"""
+        <div class="liunian-year-container">
+            <div class="liunian-year-label">📅 {T("預測年份")}</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
         col_year, col_calc = st.columns([1, 2])
         with col_year:
-             liunian_year = st.number_input(T("預測年份"), min_value=1900, max_value=2100, value=datetime.now().year + 1, step=1, key="liunian_year_input")
+             liunian_year = st.number_input(T("預測年份"), min_value=1900, max_value=2100, value=datetime.now().year + 1, step=1, key="liunian_year_input", label_visibility="collapsed")
 
         # Calculate schedule based on user input
         schedule_info = calculate_bazi_schedule(liunian_year)
@@ -2826,11 +2860,11 @@ with st.container():
         with gan_cols[0]:
             gan_year = st.text_input(T("年干"), value="甲", help=T("例如：甲、乙、丙、丁等"))
         with gan_cols[1]:
-            gan_month = st.text_input(T("月干"), value="子", help=T("例如：甲、乙、丙、丁等"))
+            gan_month = st.text_input(T("月干"), value="甲", help=T("例如：甲、乙、丙、丁等"))
         with gan_cols[2]:
             gan_day = st.text_input(T("日干"), value="甲", help=T("例如：甲、乙、丙、丁等"))
         with gan_cols[3]:
-            gan_time = st.text_input(T("时干"), value="子", help=T("例如：甲、乙、丙、丁等"))
+            gan_time = st.text_input(T("时干"), value="甲", help=T("例如：甲、乙、丙、丁等"))
         
         with zhi_cols[0]:
             zhi_year = st.text_input(T("年支"), value="子", help=T("例如：子、丑、寅、卯等"))
