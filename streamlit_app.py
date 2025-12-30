@@ -698,24 +698,24 @@ with st.sidebar:
         <style>
         .liunian-year-container {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 15px;
-            border-radius: 10px;
-            margin: 10px 0;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 8px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .liunian-year-label {
-            font-size: 18px;
-            font-weight: 700;
+            font-size: 14px;
+            font-weight: 600;
             color: white;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             text-align: center;
         }
         div[data-testid="stNumberInput"] > div > div > input {
-            font-size: 20px !important;
+            font-size: 24px !important;
             font-weight: 700 !important;
-            padding: 12px 16px !important;
-            border: 3px solid #fff !important;
-            border-radius: 8px !important;
+            padding: 10px 14px !important;
+            border: 2px solid #fff !important;
+            border-radius: 6px !important;
             background-color: white !important;
         }
         </style>
@@ -723,7 +723,7 @@ with st.sidebar:
         
         st.markdown(f"""
         <div class="liunian-year-container">
-            <div class="liunian-year-label">📅 {T("預測年份")}</div>
+            <div class="liunian-year-label">🔮 {T("預測年份")}</div>
         </div>
         """, unsafe_allow_html=True)
         
@@ -912,6 +912,8 @@ with st.sidebar:
 ---
 （隨後按上述格式輸出完整分析報告）
 系統就緒：請提供您的性別、生辰八字及想預測的年份，我將為您進行深度流年分析。
+
+**語言要求：所有文字、術語、描述都必須是繁體中文。**
 """)
         
         # Append schedule info to liunian_text for copying
