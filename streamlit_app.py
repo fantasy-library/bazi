@@ -235,6 +235,26 @@ def get_current_lunar_date():
         pass
     return ""
 
+# 获取完整当前日期信息（用于流年预演提示词）
+def get_current_date_info():
+    """获取完整当前日期信息，格式：(今天是西元2025年12月30日，乙巳年戊子月癸酉日)"""
+    try:
+        if Lunar and Solar:
+            today = datetime.now()
+            solar = Solar.fromYmdHms(today.year, today.month, today.day, today.hour, today.minute, today.second)
+            lunar = solar.getLunar()
+            ba = lunar.getEightChar()
+            gan_year = ba.getYearGan()
+            zhi_year = ba.getYearZhi()
+            gan_month = ba.getMonthGan()
+            zhi_month = ba.getMonthZhi()
+            gan_day = ba.getDayGan()
+            zhi_day = ba.getDayZhi()
+            return f"(今天是西元{today.year}年{today.month}月{today.day}日，{gan_year}{zhi_year}年{gan_month}{zhi_month}月{gan_day}{zhi_day}日)"
+    except:
+        pass
+    return f"(今天是西元{datetime.now().year}年{datetime.now().month}月{datetime.now().day}日)"
+
 # --- 1. Helper Function: Scan for exact Solar Term date ---
 def find_term_exact_date(year, month, term_name_simplified):
     """
@@ -679,9 +699,14 @@ with st.sidebar:
 
         # Calculate schedule based on user input
         schedule_info = calculate_bazi_schedule(liunian_year)
+        
+        # Get current date info
+        current_date_info = get_current_date_info()
 
         liunian_text = T(f"""
-你是一位精通子平八字、《三命通會》與《窮通寶鑑》的命理戰略顧問，具備將傳統命理智慧轉化為現代人生策略的能力。你的專長是結合「原局、大運、流年」三方動態系統，進行深度、精準且實用的運勢分析。
+{current_date_info}
+
+你是一位精通子平八字、深得易經精髓的命理戰略顧問，具備將傳統命理智慧轉化為現代人生策略的能力。你的專長是結合「原局、大運、流年」三方動態系統，進行深度、精準且實用的運勢分析。
 
 核心分析哲學
 動態系統觀：原局為靜態劇本，大運為十年舞台，流年為年度劇情，三者互動構成完整命運系統。
