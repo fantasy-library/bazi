@@ -235,6 +235,88 @@ def get_current_lunar_date():
         pass
     return ""
 
+# --- 1. Helper Function: Scan for exact Solar Term date ---
+def find_term_exact_date(year, month, term_name_simplified):
+    """
+    Scans days 1-15 of a Gregorian month to find the specific Solar Term.
+    Uses Simplified Chinese for the search to match the library's internal data.
+    """
+    if not Solar or not Lunar:
+        return None
+        
+    for d in range(1, 16):
+        try:
+            s = Solar.fromYmd(year, month, d)
+            l = Lunar.fromSolar(s)
+            if l.getJieQi() == term_name_simplified:
+                return s
+        except:
+            continue
+    return None
+
+# --- 2. Main Calculation Logic ---
+def calculate_bazi_schedule(year):
+    if not Solar or not Lunar:
+        return "⚠️ lunar_python library not installed."
+
+    try:
+        year = int(year)
+    except ValueError:
+        return "⚠️ Please enter a valid 4-digit year (e.g., 1985)."
+
+    # Calculate Year Pillar (Use mid-year date to ensure we are in the correct year pillar)
+    sample_solar = Solar.fromYmd(year, 6, 1)
+    sample_lunar = Lunar.fromSolar(sample_solar)
+    year_ganzhi = sample_lunar.getYearInGanZhiExact()
+
+    # Translation Map (Simplified -> Traditional)
+    to_traditional = {
+        "立春": "立春", "惊蛰": "驚蟄", "清明": "清明", "立夏": "立夏",
+        "芒种": "芒種", "小暑": "小暑", "立秋": "立秋", "白露": "白露",
+        "寒露": "寒露", "立冬": "立冬", "大雪": "大雪", "小寒": "小寒"
+    }
+
+    # Month Definitions
+    month_data = [
+        ("一月", "立春", "惊蛰", 2, 3), ("二月", "惊蛰", "清明", 3, 4),
+        ("三月", "清明", "立夏", 4, 5), ("四月", "立夏", "芒种", 5, 6),
+        ("五月", "芒种", "小暑", 6, 7), ("六月", "小暑", "立秋", 7, 8),
+        ("七月", "立秋", "白露", 8, 9), ("八月", "白露", "寒露", 9, 10),
+        ("九月", "寒露", "立冬", 10, 11), ("十月", "立冬", "大雪", 11, 12),
+        ("十一月", "大雪", "小寒", 12, 1), ("十二月", "小寒", "立春", 1, 2)
+    ]
+
+    # Header
+    output = []
+    output.append(f"### {year}年 ({year_ganzhi}年) 流月天干地支表")
+    output.append("-" * 30)
+
+    for m_name, start_key, end_key, start_m, end_m in month_data:
+        # Handle Year Rollover (Dec/Jan logic)
+        curr_y = year + 1 if (m_name in ["十一月", "十二月"] and start_m <= 2) else year
+        next_y = year + 1 if (m_name in ["十月", "十一月", "十二月"] and end_m <= 3) else year
+
+        start_date = find_term_exact_date(curr_y, start_m, start_key)
+        end_date = find_term_exact_date(next_y, end_m, end_key)
+
+        if start_date and end_date:
+            s_str = f"{start_date.getMonth()}月{start_date.getDay()}日"
+            e_str = f"{end_date.getMonth()}月{end_date.getDay()}日"
+
+            # Calculate Monthly GanZhi (Check 1 day after start term)
+            mid_month = start_date.next(1)
+            month_ganzhi = Lunar.fromSolar(mid_month).getMonthInGanZhiExact()
+
+            # Convert to Traditional for display
+            start_display = to_traditional.get(start_key, start_key)
+            end_display = to_traditional.get(end_key, end_key)
+
+            output.append(f"**{year_ganzhi}年 {m_name}（{month_ganzhi}月）**：{start_display} ({s_str}) - {end_display} ({e_str})")
+        else:
+            output.append(f"Error calculating {m_name}")
+
+    return "\n".join(output)
+
 # 標題與日期顯示 - 整合版（節省空間、美化UI）
 current_date = datetime.now()
 lunar_date = get_current_lunar_date()
@@ -415,13 +497,13 @@ with st.sidebar:
         st.components.v1.html(copy_html, height=60)
         st.markdown(reference_text)
 
-    with st.expander(T("📊 數據儀表板"), expanded=False):
+    with st.expander(T("📊 數據版圖"), expanded=False):
         dashboard_text = T(f"""
 # Role: 命理數據分析師 (Metaphysics Data Analyst)
 
 ## Objective
 
-將用戶提供的八字命盤，視為一支「人生股票」，轉化為一份高度視覺化的「投資分析儀錶板」。
+將用戶提供的八字命盤，視為一支「人生股票」，轉化為一份高度視覺化的「投資分析版圖」。
 
 重點：使用 ASCII 圖表、Emoji 和進度條，讓用戶在 3 秒內看懂「基本面 (五行)」與「技術面 (運勢)」。嚴禁長篇大論。
 
@@ -555,7 +637,7 @@ with st.sidebar:
 
 **現在，請分析以下八字：**
 """)
-        # 复制到剪贴板按钮 - 八字數據儀表板版
+        # 复制到剪贴板按钮 - 八字數據版圖版
         dashboard_text_plain = re.sub(r'\*\*([^*]+)\*\*', r'\1', dashboard_text)
         dashboard_text_plain = re.sub(r'^#{1,4}\s+', '', dashboard_text_plain, flags=re.MULTILINE)
         dashboard_text_plain = dashboard_text_plain.strip()
@@ -564,7 +646,7 @@ with st.sidebar:
         copy_dashboard_html = f"""
         <div>
         <button id="copyDashboardBtn" style="width:100%; padding:8px; margin-bottom:10px; background-color:#00BCD4; color:white; border:none; border-radius:4px; cursor:pointer; font-size:14px;">
-            📊 {T("複製數據儀表板提示詞")}
+            📊 {T("複製數據版圖提示詞")}
         </button>
         </div>
         <script>
@@ -589,6 +671,15 @@ with st.sidebar:
         st.markdown(dashboard_text)
 
     with st.expander(T("📅 流年預演"), expanded=False):
+        st.caption(T("請輸入您想預測的流年年份，系統將自動計算該年的流月干支表並附在提示詞中。"))
+        
+        col_year, col_calc = st.columns([1, 2])
+        with col_year:
+             liunian_year = st.number_input(T("預測年份"), min_value=1900, max_value=2100, value=datetime.now().year + 1, step=1, key="liunian_year_input")
+
+        # Calculate schedule based on user input
+        schedule_info = calculate_bazi_schedule(liunian_year)
+
         liunian_text = T(f"""
 你是一位精通子平八字、《三命通會》與《窮通寶鑑》的命理戰略顧問，具備將傳統命理智慧轉化為現代人生策略的能力。你的專長是結合「原局、大運、流年」三方動態系統，進行深度、精準且實用的運勢分析。
 
@@ -763,8 +854,12 @@ with st.sidebar:
 （隨後按上述格式輸出完整分析報告）
 系統就緒：請提供您的性別、生辰八字及想預測的年份，我將為您進行深度流年分析。
 """)
+        
+        # Append schedule info to liunian_text for copying
+        full_liunian_text = liunian_text + "\\n\\n" + schedule_info
+
         # 复制到剪贴板按钮 - 流年預演版
-        liunian_text_plain = re.sub(r'\*\*([^*]+)\*\*', r'\1', liunian_text)
+        liunian_text_plain = re.sub(r'\*\*([^*]+)\*\*', r'\\1', full_liunian_text)
         liunian_text_plain = re.sub(r'^#{1,4}\s+', '', liunian_text_plain, flags=re.MULTILINE)
         liunian_text_plain = liunian_text_plain.strip()
         liunian_text_escaped = json.dumps(liunian_text_plain)
@@ -772,29 +867,30 @@ with st.sidebar:
         copy_liunian_html = f"""
         <div>
         <button id="copyLiunianBtn" style="width:100%; padding:8px; margin-bottom:10px; background-color:#9C27B0; color:white; border:none; border-radius:4px; cursor:pointer; font-size:14px;">
-            📅 {T("複製流年預演提示詞")}
+            📅 {{T("複製流年預演提示詞")}}
         </button>
         </div>
         <script>
-        const copyLiunianText = {liunian_text_escaped};
+        const copyLiunianText = {{liunian_text_escaped}};
         document.getElementById('copyLiunianBtn').addEventListener('click', function() {{
             navigator.clipboard.writeText(copyLiunianText).then(function() {{
                 const btn = document.getElementById('copyLiunianBtn');
                 const originalText = btn.innerHTML;
-                btn.innerHTML = '✅ {T("已複製！")}';
+                btn.innerHTML = '✅ {{T("已複製！")}}';
                 btn.style.backgroundColor = '#2196F3';
                 setTimeout(function() {{
                     btn.innerHTML = originalText;
                     btn.style.backgroundColor = '#9C27B0';
                 }}, 2000);
             }}, function(err) {{
-                alert('{T("複製失敗，請手動選擇文字複製")}');
+                alert('{{T("複製失敗，請手動選擇文字複製")}}');
             }});
         }});
         </script>
         """
         st.components.v1.html(copy_liunian_html, height=60)
         st.markdown(liunian_text)
+        st.markdown(schedule_info)
 
     with st.expander(T("👨‍👩‍👧‍👦 家族分析"), expanded=False):
         family_text = T(f"""
