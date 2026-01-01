@@ -402,6 +402,7 @@ with st.sidebar:
     st.caption(T("免責申明： AI分析基於傳統命理模型，旨在從能量互動角度提供一種多角度視角參考，並非定論。願此分析能帶給您啟發。"))
     with st.expander(T("📋 基礎分析"), expanded=False):
         reference_text = T(f"""
+{get_current_date_info()}
 你是一位精通八字命理的資深分析師，深研《淵海子平》、《三命通會》、《滴天髓》、《窮通寶鑑》等經典。你的分析風格兼具傳統命理的嚴謹邏輯與現代心理學的哲學思辨。你的語氣冷靜、客觀、充滿人文關懷，避免使用宿命論的絕對斷語（如「必死」、「富貴命」），而是使用「有…傾向」、「能量流向顯示」等引導性語言，旨在幫助求測者認識自我、趨吉避凶。
 
 【分析邏輯核心】
@@ -520,6 +521,7 @@ with st.sidebar:
     with st.expander(T("📊 數據版圖"), expanded=False):
         dashboard_text = T(f"""
 # Role: 命理數據分析師 (Metaphysics Data Analyst)
+{get_current_date_info()}
 
 ## Objective
 
@@ -729,7 +731,7 @@ with st.sidebar:
         
         col_year, col_calc = st.columns([1, 2])
         with col_year:
-             liunian_year = st.number_input(T("預測年份"), min_value=1900, max_value=2100, value=datetime.now().year + 1, step=1, key="liunian_year_input", label_visibility="collapsed")
+             liunian_year = st.number_input(T("預測年份"), min_value=1900, max_value=2100, value=datetime.now().year, step=1, key="liunian_year_input", label_visibility="collapsed")
 
         # Calculate schedule based on user input
         schedule_info = calculate_bazi_schedule(liunian_year)
@@ -1109,8 +1111,9 @@ with st.sidebar:
         st.markdown(family_text)
 
     with st.expander(T("🎮 戰略分析"), expanded=False):
-        strategy_text = T("""
+        strategy_text = T(f"""
 # Role: 命運戰略顧問 (Destiny Strategy Consultant) - "Hardcore Mode"
+{get_current_date_info()}
 
 ## Profile
 
@@ -1265,6 +1268,7 @@ with st.sidebar:
     with st.expander(T("🏥 健康解讀"), expanded=False):
         health_text = T(f"""
 # Role: 全息生命健康分析師 (Holistic Health & Bio-Energy Analyst)
+{get_current_date_info()}
 
 ## Objective
 
@@ -1793,8 +1797,9 @@ with st.sidebar:
         st.markdown(academic_text)
 
     with st.expander(T("🗺️ 職涯規劃"), expanded=False):
-        corporate_text = T("""
+        corporate_text = T(f"""
 角色设定：八字職涯戰略顧問 (Bazi Career Strategy Consultant)
+{get_current_date_info()}
 你是一位融合 商業戰略分析、組織行為學 與 八字命理模型 的頂尖職涯規劃專家。你將用戶的八字命盤，視為其與生俱來的 「個人無限公司」(Personal Unlimited Corp.) 營運藍圖。你的任務不是算命，而是擔任這家公司的 首席戰略顧問，通過分析其 先天組織架構、核心競爭力、部門協作與衝突，並結合 宏觀經濟週期（大運流年），提供一份高度 結構化、可視化、可執行 的 個人職涯發展五年戰略規劃。
 
 你的終極目標是回答一個核心問題：根據我的"人生公司"的先天DNA，我究竟適合在怎樣的"商業環境"中發展？是去顛覆市場的"科技創業型"公司，還是加入穩健經營的"傳統平台型"組織（如政府、大學、大型企業）？
@@ -1993,6 +1998,7 @@ Part 7: 風險管理與應急預案 (Risk Management)
     with st.expander(T("🌟 天象解讀"), expanded=False):
         weather_text = T(f"""
 # Role: 天象解讀者 (The Destiny Weather Forecaster)
+{get_current_date_info()}
 
 ## Profile
 
@@ -2195,6 +2201,7 @@ Part 7: 風險管理與應急預案 (Risk Management)
     with st.expander(T("💕 情感解碼"), expanded=False):
         heart_text = T(f"""
 # Role: 深情解碼師 (The Heartscape Analyst)
+{get_current_date_info()}
 
 ## Profile
 
@@ -2360,6 +2367,7 @@ Part 7: 風險管理與應急預案 (Risk Management)
     with st.expander(T("💰 財富戰略"), expanded=False):
         wealth_text = T(f"""
 # Role: 命運財富戰略官 (The Destiny Wealth Strategist)
+{get_current_date_info()}
 
 ## Profile
 
@@ -2567,6 +2575,7 @@ Part 7: 風險管理與應急預案 (Risk Management)
     with st.expander(T("⚔️ RPG 裝備"), expanded=False):
         rpg_text = T(f"""
 # Role: 命運裝備鑑定師 (Destiny Inventory Appraiser)
+{get_current_date_info()}
 
 ## Profile
 
