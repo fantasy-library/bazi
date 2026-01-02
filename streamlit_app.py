@@ -2848,10 +2848,10 @@ with st.container():
             day = st.selectbox(T("出生日期"), options=list(range(1, max_days + 1)), index=current_day - 1, key="day_input", label_visibility="collapsed")
         with date_cols[3]:
             st.markdown(f'<div style="text-align: center; color: #666; margin-bottom: 5px; font-weight: 500;">{T("时")}</div>', unsafe_allow_html=True)
-            hour = st.number_input(T("时"), value=12, min_value=0, max_value=23, step=1, key="hour_input", label_visibility="collapsed")
+            hour = st.selectbox(T("出生时辰"), options=list(range(0, 24)), index=12, key="hour_input", label_visibility="collapsed")
         with date_cols[4]:
             st.markdown(f'<div style="text-align: center; color: #666; margin-bottom: 5px; font-weight: 500;">{T("分")}</div>', unsafe_allow_html=True)
-            minute = st.number_input(T("分"), value=0, min_value=0, max_value=59, step=1, key="minute_input", label_visibility="collapsed")
+            minute = st.selectbox(T("出生分钟"), options=list(range(0, 60)), index=0, key="minute_input", label_visibility="collapsed")
 
     # 选项和性别选择 - 两栏布局
     col1, col2 = st.columns([1.2, 1])
