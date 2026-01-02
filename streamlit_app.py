@@ -3051,6 +3051,59 @@ with st.container():
         if output:
             st.markdown("---")
             st.markdown(f"### 📊 {T('八字排盤結果')}")
+            
+            # 复制到剪贴板按钮 - 八字排盤結果版（更明显）
+            output_escaped = json.dumps(output)
+            copy_output_html = f"""
+            <div style="margin-bottom: 15px;">
+            <button id="copyBaziOutputBtn" style="
+                width: 100%; 
+                padding: 16px 24px; 
+                margin-bottom: 15px; 
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: #ffffff; 
+                border: none; 
+                border-radius: 8px; 
+                cursor: pointer; 
+                font-size: 18px; 
+                font-weight: 700;
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+                transition: all 0.3s ease;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            ">
+                📋 {T("複製到剪貼板")}
+            </button>
+            </div>
+            <script>
+            const copyOutputText = {output_escaped};
+            document.getElementById('copyBaziOutputBtn').addEventListener('click', function() {{
+                navigator.clipboard.writeText(copyOutputText).then(function() {{
+                    const btn = document.getElementById('copyBaziOutputBtn');
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '✅ {T("已複製！")}';
+                    btn.style.background = 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)';
+                    btn.style.boxShadow = '0 6px 20px rgba(76, 175, 80, 0.5)';
+                    setTimeout(function() {{
+                        btn.innerHTML = originalText;
+                        btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                        btn.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
+                    }}, 2000);
+                }}, function(err) {{
+                    alert('{T("複製失敗，請手動選擇文字複製")}');
+                }});
+            }});
+            document.getElementById('copyBaziOutputBtn').addEventListener('mouseenter', function() {{
+                this.style.transform = 'translateY(-2px)';
+                this.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
+            }});
+            document.getElementById('copyBaziOutputBtn').addEventListener('mouseleave', function() {{
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
+            }});
+            </script>
+            """
+            st.components.v1.html(copy_output_html, height=80)
+            
             st.markdown(f"```\n{output}\n```")
             st.session_state.bazi_output = output
 
