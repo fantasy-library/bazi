@@ -366,7 +366,7 @@ with header_container:
         </div>
     </div>
     
-    <div style="margin-bottom: 15px; padding: 10px; border-radius: 8px; border-left: 4px solid #0984e3;">
+    <div style="margin-bottom: 15px; padding: 10px; border-radius: 8px;">
         <p style="margin: 0; color: #636e72; font-size: 14px;">
             💡 {T("輸入你的出生時間")}<br>
             {T("不清楚出生時辰請先隨意選一個")}
@@ -2993,6 +2993,16 @@ with st.container():
         font-weight: 700 !important;
         min-height: 60px !important;
         height: auto !important;
+        color: #ffffff !important;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border: none !important;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4) !important;
+    }
+    button[kind="primary"][data-testid="baseButton-primary"]:hover {
+        background: linear-gradient(135deg, #5568d3 0%, #6a3d8f 100%) !important;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6) !important;
+        transform: translateY(-2px) !important;
     }
     </style>
     """, unsafe_allow_html=True)
