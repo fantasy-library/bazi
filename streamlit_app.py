@@ -960,7 +960,7 @@ with st.sidebar:
         st.markdown(liunian_text)
         st.markdown(schedule_info)
 
-    with st.expander(T("👨‍👩‍👧‍👦 家庭論理"), expanded=False):
+    with st.expander(T("👨‍👩‍👧‍👦 家庭總論"), expanded=False):
         family_text = T(f"""
 # Role: 家庭系統命理分析師 (Family Systemic Metaphysics Analyst)
 (今天是西元{datetime.now().year}年{datetime.now().month}月{datetime.now().day}日，{get_current_lunar_date()})
