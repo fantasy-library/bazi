@@ -2806,22 +2806,6 @@ st.markdown(
         transform: translateY(-2px);
         box-shadow: 0 6px 12px rgba(0,0,0,0.2);
     }
-    /* 計算八字按钮 - 更大更突出 */
-    button[data-testid*="baseButton-secondary"]:has-text("計算八字"),
-    button:has-text("计算八字"),
-    button:has-text("計算八字") {
-        font-size: 24px !important;
-        padding: 20px 40px !important;
-        font-weight: 700 !important;
-        min-height: 60px !important;
-    }
-    /* 使用更通用的选择器 */
-    div[data-testid="column"]:has(button[type="button"]) button[type="button"] {
-        font-size: 24px !important;
-        padding: 20px 40px !important;
-        font-weight: 700 !important;
-        min-height: 60px !important;
-    }
     /* 改进复选框和切换按钮样式 */
     .stCheckbox, .stToggle {
         margin: 10px 0;
