@@ -707,18 +707,22 @@ with st.sidebar:
         st.markdown("""
         <style>
         .liunian-year-container {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: transparent;
             padding: 10px;
             border-radius: 8px;
             margin: 8px 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .liunian-year-label {
             font-size: 14px;
             font-weight: 600;
-            color: white;
+            color: #000000;
+            background-color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 6px;
             margin-bottom: 6px;
             text-align: center;
+            display: inline-block;
+            width: 100%;
         }
         div[data-testid="stNumberInput"] > div > div > input {
             font-size: 24px !important;
