@@ -2806,6 +2806,22 @@ st.markdown(
         transform: translateY(-2px);
         box-shadow: 0 6px 12px rgba(0,0,0,0.2);
     }
+    /* 計算八字按钮 - 更大更突出 */
+    button[data-testid*="baseButton-secondary"]:has-text("計算八字"),
+    button:has-text("计算八字"),
+    button:has-text("計算八字") {
+        font-size: 24px !important;
+        padding: 20px 40px !important;
+        font-weight: 700 !important;
+        min-height: 60px !important;
+    }
+    /* 使用更通用的选择器 */
+    div[data-testid="column"]:has(button[type="button"]) button[type="button"] {
+        font-size: 24px !important;
+        padding: 20px 40px !important;
+        font-weight: 700 !important;
+        min-height: 60px !important;
+    }
     /* 改进复选框和切换按钮样式 */
     .stCheckbox, .stToggle {
         margin: 10px 0;
@@ -2985,12 +3001,24 @@ with st.container():
             zhi_time = st.text_input(T("时支"), value="子", help=T("例如：子、丑、寅、卯等"))
 
     # 计算按钮 - 居中且更大
+    st.markdown("""
+    <style>
+    button[kind="primary"][data-testid="baseButton-primary"] {
+        font-size: 24px !important;
+        padding: 20px 40px !important;
+        font-weight: 700 !important;
+        min-height: 60px !important;
+        height: auto !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
     button_col1, button_col2, button_col3 = st.columns([1, 2, 1])
     with button_col2:
         calculate_button = st.button(
-            f"🔮 {T('计算八字')}", 
+            f"{T('開始批算')} →", 
             type="primary", 
             use_container_width=True,
+            key="calculate_bazi_button",
             help=T("点击开始计算八字命盘")
         )
     
