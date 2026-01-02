@@ -366,7 +366,7 @@ with header_container:
         </div>
     </div>
     
-    <div style="margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #0984e3;">
+    <div style="margin-bottom: 15px; padding: 10px; border-radius: 8px; border-left: 4px solid #0984e3;">
         <p style="margin: 0; color: #636e72; font-size: 14px;">
             💡 {T("輸入你的出生時間")}<br>
             {T("不清楚出生時辰請先隨意選一個")}
