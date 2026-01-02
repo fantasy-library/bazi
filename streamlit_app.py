@@ -2999,7 +2999,7 @@ with st.container():
     button_col1, button_col2, button_col3 = st.columns([1, 2, 1])
     with button_col2:
         calculate_button = st.button(
-            f"{T('開始批算')} →", 
+            f"🧮 {T('計算八字')}", 
             type="primary", 
             use_container_width=True,
             key="calculate_bazi_button",
