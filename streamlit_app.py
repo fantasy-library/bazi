@@ -8,6 +8,7 @@ import re
 import json
 from pathlib import Path
 from datetime import datetime
+import calendar
 
 import streamlit as st
 try:
@@ -2831,10 +2832,20 @@ with st.container():
             year = st.number_input(T("年"), value=1990, min_value=1850, max_value=2100, step=1, key="year_input", label_visibility="collapsed")
         with date_cols[1]:
             st.markdown(f'<div style="text-align: center; color: #666; margin-bottom: 5px; font-weight: 500;">{T("月")}</div>', unsafe_allow_html=True)
-            month = st.number_input(T("月"), value=1, min_value=1, max_value=12, step=1, key="month_input", label_visibility="collapsed")
+            month = st.selectbox(T("出生月份"), options=list(range(1, 13)), index=0, key="month_input", label_visibility="collapsed")
+        
+        # 根据年份和月份计算该月的最大天数
+        max_days = calendar.monthrange(year, month)[1]
+        # 获取当前选择的日期值，如果超出范围则调整为最大值
+        current_day = st.session_state.get("day_input", 1)
+        if current_day > max_days:
+            current_day = max_days
+        if current_day < 1:
+            current_day = 1
+        
         with date_cols[2]:
             st.markdown(f'<div style="text-align: center; color: #666; margin-bottom: 5px; font-weight: 500;">{T("日")}</div>', unsafe_allow_html=True)
-            day = st.number_input(T("日"), value=1, min_value=1, max_value=31, step=1, key="day_input", label_visibility="collapsed")
+            day = st.selectbox(T("出生日期"), options=list(range(1, max_days + 1)), index=current_day - 1, key="day_input", label_visibility="collapsed")
         with date_cols[3]:
             st.markdown(f'<div style="text-align: center; color: #666; margin-bottom: 5px; font-weight: 500;">{T("时")}</div>', unsafe_allow_html=True)
             hour = st.number_input(T("时"), value=12, min_value=0, max_value=23, step=1, key="hour_input", label_visibility="collapsed")
