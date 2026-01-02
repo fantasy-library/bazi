@@ -2997,19 +2997,26 @@ with st.container():
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
         border: none !important;
+        border-bottom: 4px solid #5a67d8 !important;
         box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4) !important;
+        transition: all 0.3s ease !important;
     }
     button[kind="primary"][data-testid="baseButton-primary"]:hover {
         background: linear-gradient(135deg, #5568d3 0%, #6a3d8f 100%) !important;
+        border-bottom: 4px solid #4c51bf !important;
         box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6) !important;
         transform: translateY(-2px) !important;
+    }
+    button[kind="primary"][data-testid="baseButton-primary"]:active {
+        border-bottom: 2px solid #4c51bf !important;
+        transform: translateY(0) !important;
     }
     </style>
     """, unsafe_allow_html=True)
     button_col1, button_col2, button_col3 = st.columns([1, 2, 1])
     with button_col2:
         calculate_button = st.button(
-            f"🧮 {T('計算八字')}", 
+            f"{T('計算八字')}→", 
             type="primary", 
             use_container_width=True,
             key="calculate_bazi_button",
