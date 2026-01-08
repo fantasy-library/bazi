@@ -169,6 +169,10 @@ def format_output(text: str) -> str:
         # Skip all lines containing 財庫
         if '財庫' in line:
             continue
+        # Skip temperature/energy lines like "【年】-4:5午 【月】6:-6巳 【日】6:3 【時】3:6寅"
+        # These lines contain incorrect information and should be filtered out
+        if re.search(r'【年】[^【]*【月】[^【]*【日】[^【]*【[时時]】', line):
+            continue
         filtered_lines.append(line)
     t = '\n'.join(filtered_lines)
 
