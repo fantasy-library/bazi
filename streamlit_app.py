@@ -639,22 +639,15 @@ def add_personality_analysis(output: str, month_zhi: str, hour_zhi: str) -> str:
             if line.strip() and ("=" * 50 in line or "=" * 100 in line):
                 separator_found = True
                 # Add personality analysis after the separator line
-                analysis = f"""
-【{month_data["name"]} × {hour_zhi}時】{hour_data["title"]}
-
+                # No empty lines between items, and remove "核心課題" line
+                analysis = f"""【{month_data["name"]} × {hour_zhi}時】{hour_data["title"]}
 📌 月令主題：{month_data["theme"]}
 ⚡ 能量特質：{month_data["energy"]}
-
 🌍 氣候背景（月令）：{hour_data["climate"]}
    時辰功能：{hour_data["function"]}
-
 🧠 性格結構：{hour_data["structure"]}
-
-👥 人際/行為表現：{hour_data["social"]}
-
-⚠️ 核心課題：{hour_data["issue"]}
-"""
-                result.append(analysis.strip())
+👥 人際/行為表現：{hour_data["social"]}"""
+                result.append(analysis)
                 rizhu_found = False
     
     return '\n'.join(result)
