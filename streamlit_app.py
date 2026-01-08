@@ -218,6 +218,12 @@ def parse_current_dayun(output: str, birth_year: int, birth_month: int, birth_da
             if match:
                 age = int(match.group(1))
                 ganzhi = match.group(2)
+
+                # If current age is before the first listed dayun start age,
+                # still show the first dayun (common for very young命主).
+                if prev_age == 0 and current_age < age:
+                    current_dayun = ganzhi
+                    break
                 
                 # If current age is between prev_age and this age, use prev_dayun
                 if prev_age > 0 and prev_age <= current_age < age:
