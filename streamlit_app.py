@@ -269,6 +269,355 @@ def add_current_dayun_marker(output: str, current_dayun: str) -> str:
     return '\n'.join(result)
 
 
+# 12月令 x 12時辰 完整性格分析總表 (144組合)
+# Structure: personality_matrix[月令][時辰][屬性]
+personality_matrix = {
+    # ==========================
+    # 第一卷：春季 (Spring)
+    # ==========================
+    "寅": {  # 正月 (Tiger)
+        "name": "寅月",
+        "theme": "開局型人格",
+        "energy": "啟動、衝動、生發",
+        "hours": {
+            "子": {"title": "開創 × 深思", "climate": "初春寒木遇上深夜冷水", "function": "子水賦予了強大的直覺與反思能力", "structure": "表面是衝勁型人格，內在卻不停反覆推演，屬於「先想十步才敢動第一步」", "social": "給人聰明、冷靜、有想法的印象，但關鍵時刻常突然消失或延遲回應", "issue": "行動與安全感的拉扯"},
+            "丑": {"title": "開創 × 忍耐", "climate": "種子在凍土中掙扎發芽", "function": "丑土提供了極強的耐力與轉化力", "structure": "慢熱耐打型創業者。不像一般寅月人急躁，他們懂得「蹲低跳高」", "social": "沈默寡言的實幹家，常被低估，但最後往往是笑到最後的人", "issue": "壓力內吞"},
+            "寅": {"title": "雙倍開局", "climate": "春雷乍響，能量爆發", "function": "純粹的行動力與爆發力", "structure": "領導慾極強的「火車頭」。自信爆棚，自我意識極強，認為自己天生就是主角", "social": "霸氣、強勢、感染力強，但容易忽略他人的感受，聽不進反對意見", "issue": "衝動過頭"},
+            "卯": {"title": "闖蕩型外交官", "climate": "木氣極旺，枝繁葉茂", "function": "卯木帶來了靈活的身段與人脈觸角", "structure": "用人脈來開路。他們不是獨行俠，而是善於結盟的開拓者", "social": "熱情、好客、四海皆兄弟。擅長在不同圈子裡穿梭，利用信息差獲利", "issue": "立場易飄"},
+            "辰": {"title": "策略型先鋒", "climate": "木氣扎根於濕土，結構穩固", "function": "辰土帶來了複雜的思考結構與整合能力", "structure": "會畫路線圖的創業家。既有開創的衝勁，又有落地的現實感", "social": "給人一種「胸有成竹」的權威感，說話有條理，能說服他人追隨", "issue": "分心與傲慢"},
+            "巳": {"title": "點子型創業腦", "climate": "木火相生，能量快速燃燒", "function": "巳火主思維敏捷、變化與口才", "structure": "極度聰明的機會主義者。腦子轉得比誰都快，善於包裝概念", "social": "極具魅力的演說家，能瞬間點燃氣氛，但熱度消退也快", "issue": "三心二意"},
+            "午": {"title": "主角型先行者", "climate": "木生火旺，氣勢如虹", "function": "午火代表絕對的聚光燈與行動力", "structure": "氣場最強的開創者。不僅要開始，還要做得轟轟烈烈", "social": "慷慨大方、光明磊落，但極度好面子。需要被讚美，受不了被忽視", "issue": "自我膨脹"},
+            "未": {"title": "溫和開創者", "climate": "木氣入庫，能量趨緩", "function": "未土帶來了細膩的情感與照顧特質", "structure": "團隊型的領導者。不像寅時那麼獨裁，他們願意慢下來照顧掉隊的人", "social": "親切、好相處，帶有一種鄰家大哥/大姐的氣質，能凝聚人心", "issue": "不夠狠"},
+            "申": {"title": "行動派先鋒", "climate": "金木交戰，變動劇烈", "function": "申金代表執行、肅殺與變革", "structure": "自我衝突極強的改革者。一邊想建構，一邊想推翻。學習能力極快", "social": "反應機靈、說話直率甚至刺耳。給人一種「坐不住、定不下來」的感覺", "issue": "持久性差"},
+            "酉": {"title": "理性改革者", "climate": "木氣受制，修剪枝葉", "function": "酉金代表精準、細節與秩序", "structure": "有品味的開創者。不會盲目衝刺，而是先講究規則與美感", "social": "外表優雅高冷，內在其實很有主見。對細節挑剔", "issue": "壓抑與糾結"},
+            "戌": {"title": "扛責型開路人", "climate": "木氣合火入庫，轉為責任", "function": "戌土代表忠誠、守護與原則", "structure": "最可靠的創業夥伴。將開創的能量轉化為對團體的責任", "social": "沈穩、講義氣，讓人有安全感。遇到困難會擋在最前面", "issue": "太累"},
+            "亥": {"title": "理想型先知", "climate": "水木相生，滋養根基", "function": "亥水代表智慧、深層思維與遠見", "structure": "擁有長遠目光的夢想家。不僅看得到現在，還看得到未來十年", "social": "溫和而深邃，說話有內涵，不急不徐。給人一種「智者」的感覺", "issue": "落地慢"}
+        }
+    },
+    "卯": {  # 二月 (Rabbit)
+        "name": "卯月",
+        "theme": "關係型人格",
+        "energy": "成長、關係、協調",
+        "hours": {
+            "子": {"title": "敏感洞察者", "climate": "花草遇雨露，細膩滋養", "function": "情緒感知與直覺", "structure": "情緒雷達極度敏銳。能捕捉到空氣中微小的變化，依賴直覺判斷人際關係", "social": "溫柔、貼心，但帶有一種神秘的距離感", "issue": "想太多"},
+            "丑": {"title": "默默付出者", "climate": "草木紮根濕土", "function": "忍耐與實務操作", "structure": "現實主義的社交者。不太說漂亮話，而是用實際行動來維護關係", "social": "不搶功、不張揚，是團體中最好的輔助者", "issue": "委屈"},
+            "寅": {"title": "人際領導型", "climate": "藤蔓攀附大樹，借力使力", "function": "主導與行動", "structure": "帶人能力強的公關領袖。外圓內方，用柔軟的手段達成強硬的目標", "social": "長袖善舞，既有親和力又有威嚴", "issue": "強勢"},
+            "卯": {"title": "極致公關型", "climate": "一片繁花盛開", "function": "純粹的連結與適應", "structure": "生存適應力極強。像水一樣能適應任何容器（環境），極度靈活", "social": "誰都不得罪，八面玲瓏，人緣極佳", "issue": "迷失自我"},
+            "辰": {"title": "協調軍師", "climate": "木氣盤根錯節", "function": "整合與策略", "structure": "資源整合高手。能將不同的人脈圈串聯起來，創造新價值", "social": "看起來很忙，總是周旋於各種局中，是信息的集散地", "issue": "猶豫"},
+            "巳": {"title": "社交說書人", "climate": "木火通明，花朵綻放", "function": "表達與展現", "structure": "天生的傳播者。能將平凡的關係描述得生動有趣，情緒感染力強", "social": "熱情開朗，是聚會的靈魂人物，絕無冷場", "issue": "不夠深"},
+            "午": {"title": "關係主角", "climate": "木生火旺，熱情奔放", "function": "焦點與自我展現", "structure": "渴望被愛與關注。他們建立關係是為了證明自己的價值", "social": "大方熱情，像太陽一樣溫暖人，但情緒起伏大", "issue": "情緒化"},
+            "未": {"title": "照顧型核心", "climate": "花園中的沃土", "function": "包容與養育", "structure": "母性/父性極強的守護者。喜歡照顧弱小，在付出中獲得滿足感", "social": "溫柔敦厚，別人有困難第一個想到他。貴人運通常很好", "issue": "過勞"},
+            "申": {"title": "人際玩家", "climate": "乙庚合（相吸又相剋）", "function": "變動與現實利益", "structure": "現實又靈活的社交高手。交朋友帶有目的性，但也非常講究互惠", "social": "圈層跨度大，能與三教九流打交道，手腕高明", "issue": "浮動"},
+            "酉": {"title": "精緻社交者", "climate": "修剪花木，追求完美", "function": "原則與距離", "structure": "有潔癖的社交者。對朋友挑選嚴格，寧缺勿濫", "social": "彬彬有禮但有明顯的界線感，給人高冷的印象", "issue": "孤單"},
+            "戌": {"title": "義氣型後盾", "climate": "藤纏樹，緊密結合", "function": "忠誠與責任", "structure": "一旦認定朋友，就是一輩子。非常重視承諾與契約精神", "social": "沈穩可靠，口風緊，是大家傾訴秘密的對象", "issue": "扛太多"},
+            "亥": {"title": "療癒型存在", "climate": "水生木，滋養生長", "function": "智慧與寬容", "structure": "天生的心理導師。具有強大的同理心，能吸收他人的負能量", "social": "溫和無害，讓人想靠近，這是一種靈魂層面的吸引力", "issue": "逃避衝突"}
+        }
+    },
+    "辰": {  # 三月 (Dragon)
+        "name": "辰月",
+        "theme": "結構/策略型人格",
+        "energy": "結構、轉化、複雜",
+        "hours": {
+            "子": {"title": "策士型思考者", "climate": "水庫與水互動，思維深沈", "function": "智謀與計算", "structure": "極度聰明的佈局者。善於處理複雜資訊，將混亂歸納出秩序", "social": "話不多，但句句切中要害。給人城府較深的感覺", "issue": "內耗"},
+            "丑": {"title": "長期建設者", "climate": "濕土疊加，厚重穩固", "function": "固執與耐力", "structure": "如同推土機般的執行者。認定目標後，十頭牛都拉不回來", "social": "固執、不善變通，但極度可靠。是做基建與長期項目的好手", "issue": "悶"},
+            "寅": {"title": "戰略領導者", "climate": "木土交戰，開拓疆土", "function": "霸氣與決策", "structure": "具有大局觀的領導人。能看到宏觀結構，又有執行魄力", "social": "威嚴、有壓迫感，對下屬要求嚴格，講究效率與結果", "issue": "壓迫"},
+            "卯": {"title": "結構外交官", "climate": "木土相剋又相合", "function": "協調與手段", "structure": "在體制內游刃有餘的高手。懂得利用規則與人脈來達成目的", "social": "外表溫和，手段老練。是解決複雜糾紛的最佳人選", "issue": "模糊"},
+            "辰": {"title": "多線軍師", "climate": "土氣疊加，自刑", "function": "複製與複雜化", "structure": "思維極度複雜，同時運作多條線路。能力強，但容易自我打架", "social": "看起來強大自信，但私下常常自我否定", "issue": "分散"},
+            "巳": {"title": "策略說服者", "climate": "火生土，暖局", "function": "表達與洞察", "structure": "懂得行銷「結構」的人。能把枯燥的計畫說得天花亂墜，極具煽動性", "social": "熱情、有說服力，善於引導輿論", "issue": "價值不穩"},
+            "午": {"title": "指揮型主角", "climate": "火土相生，焦躁", "function": "展現與競爭", "structure": "好勝心極強的指揮官。不僅要有權力，還要有榮耀", "social": "氣場全開，喜歡發號施令，受不了別人比自己強", "issue": "好勝"},
+            "未": {"title": "穩定策士", "climate": "土氣沈重", "function": "包容與保守", "structure": "最穩健的守成者。風險厭惡者，每一步都經過精算", "social": "溫和沈默，但非常有主見。不做沒把握的事", "issue": "慢"},
+            "申": {"title": "機動軍師", "climate": "土生金，轉化輸出", "function": "執行與靈活", "structure": "將策略快速轉化為行動。腦子動得快，手腳也快", "social": "機智幽默，解決問題能力強，是團隊的救火隊", "issue": "不專注"},
+            "酉": {"title": "制度設計者", "climate": "辰酉合金，原則性強", "function": "細節與完美", "structure": "天生的架構師。善於設計SOP、法律條文或精密系統", "social": "嚴謹、一絲不苟，眼裡容不下一粒沙子", "issue": "僵化"},
+            "戌": {"title": "守成型軍師", "climate": "土氣對沖，動盪", "function": "防守與責任", "structure": "危機感極強的管理者。總是在預防最壞的情況發生", "social": "嚴肅、焦慮，總是眉頭深鎖，但非常負責", "issue": "疲憊"},
+            "亥": {"title": "長線規劃者", "climate": "土剋水（入庫），財星歸位", "function": "智慧與積累", "structure": "善於理財與資源配置的規劃師。懂得「放長線釣大魚」", "social": "低調、深藏不露，往往是隱形的富豪或決策者", "issue": "遲疑"}
+        }
+    },
+    # ==========================
+    # 第二卷：夏季 (Summer)
+    # ==========================
+    "巳": {  # 四月 (Snake)
+        "name": "巳月",
+        "theme": "啟動/變動型人格",
+        "energy": "啟動、思維、表達",
+        "hours": {
+            "子": {"title": "聰明但心浮", "climate": "熱氣遇上冷水，蒸氣騰騰", "function": "冷靜與反思", "structure": "極度敏感的聰明人。內在處於水火交戰狀態，思維跳躍極快", "social": "反應快、口才好，但給人一種不穩定的感覺，情緒忽冷忽熱", "issue": "焦慮"},
+            "丑": {"title": "慢熱智者", "climate": "火生濕土，光芒內斂", "function": "轉化與沈澱", "structure": "韜光養晦的策劃者。將巳月的浮躁轉化為丑土的執行力", "social": "含蓄、溫和，不愛出風頭，但關鍵時刻見解獨到", "issue": "壓抑"},
+            "寅": {"title": "主導型思維", "climate": "木火相生但刑動，火勢猛烈", "function": "衝動與開創", "structure": "急性子的改革派。思維與行動同步加速，對現狀極不耐煩", "social": "強勢、語速快、咄咄逼人，具有煽動性", "issue": "易怒"},
+            "卯": {"title": "社交高手", "climate": "木火通明，氣象一新", "function": "靈活與人脈", "structure": "資訊傳播的核心節點。善於收集情報並散播出去，像風一樣無孔不入", "social": "親切熱絡，話題豐富，是八卦或新聞的轉運站", "issue": "膚淺"},
+            "辰": {"title": "策略整合", "climate": "火生濕土，能量落地", "function": "結構與緩衝", "structure": "務實的理想主義者。雖然點子多，但辰土賦予了現實感", "social": "穩重中帶有熱情，能說服他人加入自己的計畫", "issue": "算計"},
+            "巳": {"title": "資訊核心", "climate": "火氣疊加，變動極致", "function": "複製與擴散", "structure": "停不下來的過動腦。資訊焦慮症患者，無法忍受空白，必須不斷輸入輸出", "social": "極度健談，甚至聒噪。注意力渙散，很難專注聽別人說話", "issue": "躁動"},
+            "午": {"title": "話題中心", "climate": "火勢轉旺，進入高峰", "function": "展現與競爭", "structure": "極具魅力的表演者。巳火的思維加上午火的行動，讓他們天生就在舞台中央", "social": "光鮮亮麗，氣場強大，喜歡被讚美與注視", "issue": "虛榮"},
+            "未": {"title": "溫和輸出", "climate": "火氣漸收，燥土保溫", "function": "包容與餘溫", "structure": "暖心的說服者。不像其他巳月人那麼尖銳，他們懂得用溫情攻勢來推銷觀點", "social": "親切、有耐心，像個嘮叨但好心的長輩", "issue": "猶豫"},
+            "申": {"title": "快進快出", "climate": "火金交戰又相合，變數大", "function": "執行與投機", "structure": "機會主義的極致。腦子轉得快，手腳也快，善於捕捉稍縱即逝的利益", "social": "靈活多變，今天跟你是朋友，明天可能就是對手，界線模糊", "issue": "不穩"},
+            "酉": {"title": "精準表達", "climate": "火煉真金，成器之象", "function": "細節與原則", "structure": "犀利的評論家。巳火的思維聚焦在酉金的細節上，眼光毒辣", "social": "說話講究邏輯與美感，但容易挑剔刻薄，不留情面", "issue": "完美主義"},
+            "戌": {"title": "責任發聲", "climate": "火入庫，轉為內斂", "function": "守護與誠信", "structure": "理念的捍衛者。將活躍的思維轉化為對某種信仰或原則的堅持", "social": "正直、敢言，路見不平會發聲，是團體中的正義之聲", "issue": "說教"},
+            "亥": {"title": "觀察派智者", "climate": "水火對衝，激盪思維", "function": "深層智慧與直覺", "structure": "矛盾的哲學家。外在活躍，內在深沈。常在「入世」與「出世」之間拉扯", "social": "讓人看不透，有時熱情如火，有時冷若冰霜", "issue": "分裂"}
+        }
+    },
+    "午": {  # 五月 (Horse)
+        "name": "午月",
+        "theme": "高峰/主角型人格",
+        "energy": "高峰、主角、火力",
+        "hours": {
+            "子": {"title": "外熱內冷", "climate": "水火極致對沖", "function": "冷靜與深淵", "structure": "雙重人格的極致。白天是太陽，晚上是冰山。情緒起伏極大", "social": "公眾場合熱情大方，私底下卻極度孤僻、憂鬱", "issue": "極端"},
+            "丑": {"title": "硬撐型", "climate": "烈火烤濕土", "function": "忍耐與固執", "structure": "沈默的燃燒者。內心熱情似火，外表卻木訥沈重。把能量都用在「忍耐」上", "social": "任勞任怨，看起來脾氣好，但其實內心積壓了大量不滿", "issue": "鑽牛角尖"},
+            "寅": {"title": "霸氣領導", "climate": "木火通明，氣勢磅礴", "function": "開創與權力", "structure": "天生的帝王性格。自信、果斷、目光遠大，認為自己生來就是要幹大事的", "social": "氣場強大，讓人不由自主想追隨，但聽不進反對意見", "issue": "傲慢"},
+            "卯": {"title": "人氣王", "climate": "乾柴烈火，一點就著", "function": "人緣與桃花", "structure": "大眾情人。情感豐富，渴望被愛，像一團需要不斷添加柴火的火焰", "social": "熱情浪漫，異性緣極佳，但也容易陷入情感糾紛", "issue": "依賴"},
+            "辰": {"title": "指揮官", "climate": "火生濕土，泄其燥氣", "function": "結構與執行", "structure": "有謀略的猛將。辰土能調節午火的躁動，將熱情轉化為具體的執行計畫", "social": "既有領導力，又能體恤下屬，是剛柔並濟的管理者", "issue": "野心太大"},
+            "巳": {"title": "舞台說書人", "climate": "火氣連天", "function": "思維與表達", "structure": "熱情的演講家。思維活躍，感染力極強，能瞬間點燃群眾的情緒", "social": "愛說話、愛表現，哪裡熱鬧往哪裡鑽，怕冷場", "issue": "浮誇"},
+            "午": {"title": "雙主角", "climate": "烈日當空，無處躲藏", "function": "極致的自我", "structure": "絕對的自我中心。能量太強無處宣洩，容易轉向自我攻擊或極度亢奮", "social": "性格剛烈，直腸子，愛恨分明，眼睛裡容不下一粒沙子", "issue": "暴躁"},
+            "未": {"title": "溫暖核心", "climate": "日月同輝，火土相生", "function": "包容與照顧", "structure": "大家長型人物。將午火的熱情轉化為對人的照顧，光芒變得柔和溫暖", "social": "大方、體貼，喜歡照顧人，是團隊中的精神支柱", "issue": "犧牲"},
+            "申": {"title": "玩樂高手", "climate": "火煉金，變動與控制", "function": "行動與享樂", "structure": "精力旺盛的實用主義者。做事講求效率，玩起來也很瘋，追求高強度的生活體驗", "social": "豪爽、講義氣，但也比較強勢，喜歡掌控局面", "issue": "急躁"},
+            "酉": {"title": "光環包裝", "climate": "火金相克，打造器皿", "function": "原則與美感", "structure": "注重形象的偶像派。非常在意別人怎麼看自己，將「優秀」當作一種表演", "social": "外表光鮮，舉止得體，但有距離感，不輕易暴露缺點", "issue": "面子"},
+            "戌": {"title": "扛責英雄", "climate": "火歸庫，能量轉化", "function": "責任與守護", "structure": "悲劇英雄原型。有強烈的使命感，願意為了大局燃燒自己", "social": "忠誠、可靠，遇到危難時會挺身而出，讓人很有安全感", "issue": "沈重"},
+            "亥": {"title": "退場思考者", "climate": "水火暗合，能量潛藏", "function": "智慧與心靈", "structure": "靈性探索者。外表看是午火的陽光，內心卻嚮往亥水的寧靜與深邃", "social": "看似合群，其實內心住著一個隱士，喜歡獨處與思考", "issue": "矛盾"}
+        }
+    },
+    "未": {  # 六月 (Goat)
+        "name": "未月",
+        "theme": "穩定/照顧型人格",
+        "energy": "穩定、照顧、收尾",
+        "hours": {
+            "子": {"title": "療癒者", "climate": "燥土遇水，轉為泥濘", "function": "敏感與直覺", "structure": "敏感的守護者。土的包容加上水的細膩，能敏銳感知他人的痛苦", "social": "溫柔、善解人意，但情緒容易受他人影響，顯得優柔寡斷", "issue": "情緒干擾"},
+            "丑": {"title": "耐力核心", "climate": "冷熱土對沖，崩解", "function": "固執與積累", "structure": "堅如磐石的執行者。性格極度固執，認定的事情絕不改變，耐力驚人", "social": "沈默寡言，甚至有點笨拙，但極度可靠。不容易生氣，一生氣很可怕", "issue": "僵化"},
+            "寅": {"title": "溫和領導", "climate": "木土相剋，入庫", "function": "開創與權威", "structure": "內斂的掌權者。不像午月那樣張揚，他們是用德行與資歷來服眾", "social": "穩重、有威嚴，但帶有一種長者的慈祥感，善於守成", "issue": "保守"},
+            "卯": {"title": "關係守護", "climate": "木土相生，扎根", "function": "人際與協調", "structure": "強大的連結者。善於經營長久的人際關係，將朋友轉化為家人", "social": "隨和、好客，家裡總是高朋滿座，極度重視人情味", "issue": "界線不清"},
+            "辰": {"title": "後勤軍師", "climate": "土氣疊加，厚重", "function": "結構與資源", "structure": "資源管理者。善於盤點、分類與儲存，是最好的大管家", "social": "踏實、負責，做事有條不紊，不喜歡變動", "issue": "沈悶"},
+            "巳": {"title": "溫暖表達", "climate": "火生燥土，更熱", "function": "思維與口才", "structure": "熱心的教育家。喜歡傳授經驗，把自己的知識轉化為對人的幫助", "social": "熱情、愛操心，喜歡給建議，有時會讓人覺得囉唆", "issue": "干涉"},
+            "午": {"title": "照顧型主角", "climate": "火土相生，熱情", "function": "展現與奉獻", "structure": "燃燒自己的蠟燭。將個人的光芒完全奉獻給團體或家庭，極具奉獻精神", "social": "陽光、溫暖，總是笑臉迎人，把苦水往肚子裡吞", "issue": "透支"},
+            "未": {"title": "極度付出", "climate": "土氣極旺，焦躁", "function": "固執與孤獨", "structure": "孤獨的修行者。雖然外表隨和，但內心有一塊誰都進不去的聖地。耐性極強", "social": "看起來很好相處，但其實很難真正交心，習慣一個人扛事", "issue": "麻木"},
+            "申": {"title": "輕鬆支援", "climate": "土生金，洩秀", "function": "行動與技術", "structure": "有技術的實幹家。將穩定的個性轉化為專業技能，做事乾淨利落", "social": "務實、不廢話，喜歡用解決問題來表達關心", "issue": "功利"},
+            "酉": {"title": "安靜美感", "climate": "土生金，成型", "function": "細節與審美", "structure": "生活美學家。在平淡的生活中追求精緻與秩序，有獨特的品味", "social": "優雅、安靜，不喜歡吵雜的環境，與人交往淡淡的", "issue": "挑剔"},
+            "戌": {"title": "家庭靠山", "climate": "土氣相刑，厚重", "function": "責任與原則", "structure": "沈重的守護神。對家庭或團體有無比沈重的責任感，認為自己必須撐起一片天", "social": "嚴肅、古板，不苟言笑，但絕對值得信賴", "issue": "沈重負擔"},
+            "亥": {"title": "包容型智者", "climate": "土剋水，轉化", "function": "智慧與寬容", "structure": "大肚能容的長者。亥水帶來了智慧與流動，軟化了未土的固執", "social": "豁達、開朗，能包容各種不同的人，具有宗教情懷", "issue": "無原則"}
+        }
+    },
+    # ==========================
+    # 第三卷：秋季 (Autumn)
+    # ==========================
+    "申": {  # 七月 (Monkey)
+        "name": "申月",
+        "theme": "行動/變化型人格",
+        "energy": "行動、學習、變化",
+        "hours": {
+            "子": {"title": "思考快", "climate": "金生水旺，源源不絕", "function": "智慧與流動", "structure": "流動的策略家。行動力與思考力完美結合，反應極快，善於順水推舟", "social": "聰明、靈活，但也給人一種「滑溜」的感覺，很難抓到他的把柄", "issue": "投機"},
+            "丑": {"title": "技術累積", "climate": "寒土生金，金庫收納", "function": "忍耐與鑽研", "structure": "實務型專家。將申月的好動轉化為對技術的深耕，能在專業領域沈澱很久", "social": "話不多，用實力說話，給人一種冷靜專業的信任感", "issue": "固執"},
+            "寅": {"title": "行動領導", "climate": "金木交戰，動盪激烈", "function": "開創與野心", "structure": "戰場上的將軍。人生充滿衝突與挑戰，喜歡在混亂中建立秩序，行動力極強", "social": "說話直、脾氣硬，喜歡衝撞體制，容易樹敵也容易立功", "issue": "受傷"},
+            "卯": {"title": "人際靈活", "climate": "金克木，但在暗中結合", "function": "協調與手段", "structure": "現實的交涉家。外表看起來強硬（金），其實私底下手腕柔軟（木），懂得利益交換", "social": "精明、務實，不會做虧本生意，人際關係建立在互惠基礎上", "issue": "算計"},
+            "辰": {"title": "策略調度", "climate": "土生金，水庫潤澤", "function": "結構與緩衝", "structure": "大型專案經理。能駕馭複雜的變化，將混亂的資源整合成有序的系統", "social": "穩重、有大將之風，能協調各方利益，解決矛盾", "issue": "權謀"},
+            "巳": {"title": "資訊操作", "climate": "火金相煉，變數極大", "function": "思維與變動", "structure": "聰明的投機客。善於在危機中尋找轉機，能言善道，適應力極強", "social": "八面玲瓏，情報靈通，但立場容易搖擺，讓人看不透", "issue": "焦慮"},
+            "午": {"title": "玩中帶火", "climate": "火煉頑金，成器", "function": "展現與控制", "structure": "有紀律的冒險家。喜歡挑戰高難度，但會有計畫地進行，不是盲目衝動", "social": "瀟灑、帥氣，有領導魅力，喜歡帶頭玩樂或創業", "issue": "好勝"},
+            "未": {"title": "穩定後援", "climate": "土生金，溫燥", "function": "包容與支撐", "structure": "穩健的執行者。申月的衝動被未土拉住，變得更務實、更有耐性", "social": "溫和中帶著原則，是團隊中默默做事的可靠夥伴", "issue": "被動"},
+            "申": {"title": "變化王", "climate": "金氣疊加，動能極強", "function": "複製與擴散", "structure": "永遠在路上的旅人。無法忍受一成不變，必須不斷移動、學習、改變", "social": "活潑、好動，朋友遍天下，但很難深交，因為他隨時準備離開", "issue": "無根"},
+            "酉": {"title": "效率專家", "climate": "金氣純粹，銳利", "function": "細節與完美", "structure": "精準的機器。邏輯嚴密，做事講求絕對的效率與SOP，不容許誤差", "social": "冷靜、客觀，就事論事，不講人情，容易讓人覺得冷血", "issue": "苛刻"},
+            "戌": {"title": "責任行動派", "climate": "金氣入庫，堅硬", "function": "守護與原則", "structure": "忠誠的執行官。將行動力貢獻給組織或信仰，執行力強且忠誠度高", "social": "剛毅木訥，一諾千金，是值得託付重任的對象", "issue": "死板"},
+            "亥": {"title": "觀察型玩家", "climate": "金生水，流動", "function": "智慧與隱藏", "structure": "冷靜的旁觀者。雖然身處熱鬧的環境，心靈卻保持著抽離的觀察狀態", "social": "看似合群愛玩，其實內心孤僻，喜歡獨處鑽研自己感興趣的事", "issue": "虛無"}
+        }
+    },
+    "酉": {  # 八月 (Rooster)
+        "name": "酉月",
+        "theme": "精緻/原則型人格",
+        "energy": "精煉、秩序、原則",
+        "hours": {
+            "子": {"title": "冷靜思辨", "climate": "金寒水冷，清澈", "function": "思考與直覺", "structure": "犀利的評論家。思維邏輯極強，能一眼看出事物的破綻，語言天賦高", "social": "說話尖銳、幽默但帶刺，喜歡智力遊戲，不喜歡笨蛋", "issue": "刻薄"},
+            "丑": {"title": "完美耐力", "climate": "濕土生金，穩固", "function": "堅持與積累", "structure": "工匠精神的代表。願意花一輩子把一件小事做到極致，追求完美的品質", "social": "內斂、沈穩，不善言辭，但作品或成果會讓人驚艷", "issue": "固步自封"},
+            "寅": {"title": "強勢改革", "climate": "金克木，修剪", "function": "開創與權力", "structure": "嚴厲的管理者。善於制定規則並嚴格執行，喜歡糾正別人的錯誤", "social": "威嚴、挑剔，對下屬要求極高，讓人敬畏但不敢親近", "issue": "控制"},
+            "卯": {"title": "禮貌外交", "climate": "金木對衝，折斷", "function": "社交與適應", "structure": "矛盾的紳士/淑女。外表禮貌客氣（卯），內心卻有嚴格的界線（酉）", "social": "看起來好相處，其實很難真正走進他的內心，忽冷忽熱", "issue": "虛偽"},
+            "辰": {"title": "制度設計", "climate": "辰酉合金，結構化", "function": "規劃與整合", "structure": "體制的維護者。天生適合在大機構運作，善於利用規則往上爬", "social": "得體、專業，做事滴水不漏，是完美的職業經理人形象", "issue": "功利"},
+            "巳": {"title": "精準表達", "climate": "火煉金，光亮", "function": "演講與展現", "structure": "明星級的發言人。不僅長得好看或有氣質，說話還非常有邏輯與說服力", "social": "魅力十足，注重儀表，在人群中閃閃發光", "issue": "包袱"},
+            "午": {"title": "舞台包裝", "climate": "火克金，塑形", "function": "表演與熱情", "structure": "追求極致的表演者。對美感與形式有近乎偏執的要求，要在舞台上呈現最完美的一面", "social": "華麗、張揚，喜歡聽好聽話，受不了批評", "issue": "脆弱"},
+            "未": {"title": "內斂照顧", "climate": "燥土生金，溫存", "function": "包容與守護", "structure": "有原則的照顧者。雖然會照顧人，但會有自己的規矩，不是無底線的溺愛", "social": "溫和有禮，給人一種乾淨、舒適的感覺，像精緻的下午茶", "issue": "糾結"},
+            "申": {"title": "技術高手", "climate": "金氣混雜，銳利", "function": "行動與操作", "structure": "刀法精湛的外科醫生。技術高超，執行力強，解決問題快狠準", "social": "幹練、直率，不喜歡拖泥帶水，對笨手笨腳的人沒耐心", "issue": "競爭"},
+            "酉": {"title": "完美主義", "climate": "金氣極致，寒氣逼人", "function": "挑剔與自省", "structure": "自我折磨的藝術家。對自己極度嚴苛，永遠覺得還不夠好，眼裡只有缺點", "social": "清高、孤傲，帶有一種憂鬱的氣質，很難取悅", "issue": "自刑"},
+            "戌": {"title": "原則守門員", "climate": "金氣入庫，防禦", "function": "責任與固執", "structure": "鐵面無私的法官。死守原則與規定，講究黑白分明，不講情面", "social": "嚴肅、冷硬，讓人覺得不好溝通，但絕對公正", "issue": "孤立"},
+            "亥": {"title": "哲學型美感", "climate": "金水相生，秀氣", "function": "智慧與感性", "structure": "唯美主義的詩人。金的結構加上水的流動，產生了獨特的美學與哲思", "social": "才華洋溢，氣質脫俗，談吐不凡，受人仰慕", "issue": "沈溺"}
+        }
+    },
+    "戌": {  # 九月 (Dog)
+        "name": "戌月",
+        "theme": "守成/責任型人格",
+        "energy": "守成、責任、承擔",
+        "hours": {
+            "子": {"title": "冷靜後盾", "climate": "土克水，圍堵", "function": "思考與觀察", "structure": "冷靜的守門人。在危機中能保持清醒，用理性來控制混亂的局面", "social": "平常話不多，但發生事情時會第一時間跳出來解決，讓人安心", "issue": "封閉"},
+            "丑": {"title": "硬撐型", "climate": "燥土與濕土相刑", "function": "忍耐與固執", "structure": "苦行僧。人生信條是「吃得苦中苦」，習慣給自己加壓，忍耐力極限", "social": "倔強、不服輸，遇到困難死扛，不願意求助", "issue": "積怨"},
+            "寅": {"title": "扛責領導", "climate": "木土相剋又相合", "function": "開創與燃燒", "structure": "使命型領袖。將責任感轉化為強大的行動力，為了團隊願景而衝鋒陷陣", "social": "熱血、有擔當，像大哥大姐一樣罩著大家，極具號召力", "issue": "過勞"},
+            "卯": {"title": "關係守門", "climate": "木土相合，穩固", "function": "人際與協調", "structure": "忠誠的夥伴。對朋友或伴侶極度忠誠，是那種「你贏我陪你君臨天下，你輸我陪你東山再起」的人", "social": "溫和、可靠，非常重視承諾，一旦答應絕不反悔", "issue": "盲目"},
+            "辰": {"title": "後台策士", "climate": "土氣對沖，動盪", "function": "謀略與變動", "structure": "危機處理專家。越是動盪的環境越能激發他的潛能，善於衝破僵局", "social": "強勢、機智，喜歡辯論，這是一種透過衝突來尋找真理的性格", "issue": "焦躁"},
+            "巳": {"title": "發言代表", "climate": "火入庫，溫暖", "function": "思維與表達", "structure": "理念傳播者。善於將生硬的原則轉化為溫暖的語言，去感染他人", "social": "熱誠、正向，喜歡鼓勵別人，是很好的精神導師", "issue": "好為人師"},
+            "午": {"title": "責任主角", "climate": "火土相生，熱烈", "function": "展現與榮耀", "structure": "榮譽至上的戰士。為了榮譽與責任而戰，極度愛面子，但也極度負責", "social": "光明磊落、慷慨大方，是團體中的靈魂人物", "issue": "死撐"},
+            "未": {"title": "家庭支柱", "climate": "燥土相刑，厚重", "function": "包容與守護", "structure": "沈默的守護者。對於家庭或小團體有極深的執著，願意犧牲自己來成全大局", "social": "樸實、沈穩，不善言辭，但會默默把事情做好", "issue": "悲情"},
+            "申": {"title": "行動支援", "climate": "土生金，輸出", "function": "執行與義氣", "structure": "講義氣的執行者。只要朋友一聲令下，赴湯蹈火在所不辭", "social": "豪爽、乾脆，不喜歡囉唆，是最好的行動夥伴", "issue": "魯莽"},
+            "酉": {"title": "制度守護", "climate": "土生金，原則", "function": "秩序與細節", "structure": "傳統的維護者。非常尊重傳統與規則，看不慣破壞規矩的人", "social": "保守、謹慎，做事一板一眼，讓人覺得有點古板", "issue": "僵化"},
+            "戌": {"title": "責任極重", "climate": "土氣極旺，封閉", "function": "固執與信仰", "structure": "孤獨的信徒。對某種信仰或目標有著宗教般的狂熱與堅持，耐得住極致的寂寞", "social": "孤僻、深沈，不容易打開心房，但內心世界非常豐富", "issue": "隔絕"},
+            "亥": {"title": "沉默智者", "climate": "土克水，收藏", "function": "智慧與深藏", "structure": "大智若愚的高人。看透了人情世故，選擇沈默與包容", "social": "隨和但有底線，平時不露鋒芒，關鍵時刻能給出極具智慧的建議", "issue": "消極"}
+        }
+    },
+    # ==========================
+    # 第四卷：冬季 (Winter)
+    # ==========================
+    "亥": {  # 十月 (Pig)
+        "name": "亥月",
+        "theme": "遠見/包容型人格",
+        "energy": "遠見、財星、包容",
+        "hours": {
+            "子": {"title": "智慧型", "climate": "水氣連成一片，浩瀚無邊", "function": "思考與流動", "structure": "流動的百科全書。求知慾極強，吸收資訊像海綿一樣，沒有什麼是他不想了解的", "social": "聰明、機靈，與人交談時總能拋出新觀點，但因為思維跳太快，常讓人跟不上", "issue": "漂泊"},
+            "丑": {"title": "慢累型", "climate": "水流帶動泥沙，沈重", "function": "忍耐與執行", "structure": "負重前行的智者。有亥水的聰明，但被丑土拖住，必須處理大量繁瑣的實務", "social": "外表看起來有點疲憊或嚴肅，但辦事非常牢靠，是解決爛攤子的高手", "issue": "拖延"},
+            "寅": {"title": "理想領導", "climate": "水生木，生機勃發", "function": "開創與願景", "structure": "仁慈的領袖。將智慧轉化為對未來的願景，具有強大的人文關懷與號召力", "social": "溫和、大氣，不靠威權壓人，而是用理念感染人，團隊凝聚力強", "issue": "濫情"},
+            "卯": {"title": "溫柔溝通", "climate": "水滋養木，柔順", "function": "協調與美感", "structure": "心靈療癒師。直覺敏銳，能洞察人心，擅長用溫柔的語言化解衝突", "social": "親切、優雅，人緣極佳，大家有心事都喜歡找他傾訴", "issue": "依賴"},
+            "辰": {"title": "長線策劃", "climate": "水歸庫，深沈", "function": "謀略與收藏", "structure": "深海裡的潛艇。平時不顯山露水，其實一直在佈局，城府深，耐得住寂寞", "social": "低調、神秘，說話保留三分，讓人覺得深不可測", "issue": "孤疑"},
+            "巳": {"title": "思考輸出", "climate": "水火激盪，蒸發", "function": "辯證與衝擊", "structure": "激進的改革家。思想前衛，喜歡挑戰傳統，總能看到現有體制的漏洞", "social": "犀利、直率，語出驚人，雖然有才華，但容易得罪保守派", "issue": "動盪"},
+            "午": {"title": "理想主角", "climate": "水火既濟，平衡", "function": "展現與行動", "structure": "外向的思想家。內心有深度的思考，外在又有熱情的行動力，知行合一", "social": "既有親和力又有智慧，能與不同層次的人交流，社交手腕高明", "issue": "精神潔癖"},
+            "未": {"title": "穩定支持", "climate": "水土交融，滋養", "function": "包容與守護", "structure": "幕後的推動者。不求台前的掌聲，默默用資源與智慧支持他人成功", "social": "謙虛、退讓，凡事為人著想，是團隊中最溫暖的存在", "issue": "自我犧牲"},
+            "申": {"title": "策略行動", "climate": "金生水，源頭", "function": "執行與學習", "structure": "高智商的工程師。邏輯清晰，學習能力超強，能快速掌握新技術並應用", "social": "理性、客觀，喜歡探討技術或理論問題，對情緒話題不感興趣", "issue": "冷漠"},
+            "酉": {"title": "冷靜分析", "climate": "金水相生，清澈", "function": "細節與批判", "structure": "敏銳的觀察家。具有顯微鏡般的觀察力，能發現別人忽略的細節與美感", "social": "清高、挑剔，品味獨特，喜歡與有才華的人交往", "issue": "消極"},
+            "戌": {"title": "守護型", "climate": "水土相剋，堤防", "function": "責任與原則", "structure": "傳統的智者。用傳統智慧或道德規範來約束自己，具有強烈的使命感", "social": "正直、嚴肅，不苟言笑，是維護社會秩序的中堅力量", "issue": "壓抑"},
+            "亥": {"title": "雙亥(觀察極致)", "climate": "水氣漫延，無邊", "function": "深沈與流動", "structure": "深沈的哲學家。對生命本質有深刻的思考，直覺極強，甚至帶有通靈特質", "social": "隨波逐流，看似沒有主見，其實是因為看透了，覺得「都行」", "issue": "迷茫"}
+        }
+    },
+    "子": {  # 十一月 (Rat)
+        "name": "子月",
+        "theme": "蓄能/洞察型人格",
+        "energy": "蓄能、洞察、智慧",
+        "hours": {
+            "子": {"title": "深海型人格", "climate": "極寒之水，深不可測", "function": "隱藏與謀略", "structure": "絕對的隱士。思想深邃得像馬里亞納海溝，沒有人知道他在想什麼", "social": "極度保護隱私，外表冷靜甚至冷漠，但內心活動極其劇烈", "issue": "孤獨"},
+            "丑": {"title": "耐力智慧", "climate": "冰土凍結，固態", "function": "忍耐與積累", "structure": "苦行僧式的學者。能忍受常人無法忍受的枯燥，專注於某一領域的研究", "social": "沈默、堅毅，不善社交，但一旦開口往往語出驚人", "issue": "固執"},
+            "寅": {"title": "內斂野心", "climate": "水生木，潛能", "function": "醞釀與啟動", "structure": "蟄伏的龍。外表安靜，內心卻燃燒著巨大的野心，在等待一個時機一飛沖天", "social": "謙虛、好學，給人一種潛力股的感覺，讓人不敢小看", "issue": "焦急"},
+            "卯": {"title": "情緒感知", "climate": "寒木受凍，敏感", "function": "直覺與感受", "structure": "敏感的藝術家。對情緒、氣氛的變化極度敏感，容易受傷也容易感動", "social": "細膩、溫柔，但情緒化嚴重，讓人覺得有點神經質", "issue": "內耗"},
+            "辰": {"title": "深層軍師", "climate": "水庫蓄水，能量大", "function": "規劃與權力", "structure": "幕後操盤手。善於運用權術與策略，控制慾強，喜歡在幕後掌控全局", "social": "威嚴、深沈，讓人敬畏，是天生的政治家性格", "issue": "陰沈"},
+            "巳": {"title": "聰明但飄", "climate": "水火交戰，霧氣", "function": "思維與變幻", "structure": "鬼才型人物。思維跳躍，不受傳統邏輯束縛，常有驚人的創意", "social": "機智、幽默，但有點狡猾，讓人覺得不可靠", "issue": "投機"},
+            "午": {"title": "外熱內冷", "climate": "水火對衝，極端", "function": "衝突與爆發", "structure": "矛盾的綜合體。理性與感性極端衝突，行為模式往往出人意料", "social": "情緒起伏大，時而熱情如火，時而冷若冰霜，讓人無所適從", "issue": "崩潰"},
+            "未": {"title": "溫柔療癒", "climate": "濕土混水，混亂", "function": "敏感與包容", "structure": "受傷的治癒者。因為自己經歷過痛苦，所以特別能理解別人的痛", "social": "溫柔、被動，容易吸引那些需要幫助的人，成為情緒垃圾桶", "issue": "界線"},
+            "申": {"title": "思考行動", "climate": "金水相生，流暢", "function": "邏輯與執行", "structure": "理性的執行者。思維清晰，做事有條理，能將計畫完美執行", "social": "乾練、聰明，講求效率，不喜歡拖泥帶水", "issue": "算計"},
+            "酉": {"title": "冷靜判斷", "climate": "金寒水冷，銳利", "function": "分析與批判", "structure": "冰冷的法官。用絕對的理性來審視世界，不帶一絲情感色彩", "social": "冷靜、客觀，說話直接且尖銳，不留情面", "issue": "冷血"},
+            "戌": {"title": "理性靠山", "climate": "土剋水，止流", "function": "責任與控制", "structure": "理性的守護者。用強大的意志力來控制情緒，是團體中的定海神針", "social": "沈穩、可靠，做事有分寸，讓人感到安全", "issue": "壓抑"},
+            "亥": {"title": "哲學型智者", "climate": "水勢浩大，通透", "function": "智慧與遠見", "structure": "通透的悟道者。智慧極高，看事情往往能直達本質，不被表象迷惑", "social": "豁達、隨緣，與世無爭，帶有一種出世的氣質", "issue": "虛無"}
+        }
+    },
+    "丑": {  # 十二月 (Ox)
+        "name": "丑月",
+        "theme": "忍耐/累積型人格",
+        "energy": "忍耐、累積、厚發",
+        "hours": {
+            "子": {"title": "暗中觀察", "climate": "泥濘濕寒，隱密", "function": "思考與直覺", "structure": "沈默的策略家。外表木訥，內心精明，善於在暗中觀察局勢", "social": "低調、不張揚，喜歡躲在角落裡看著大家表演", "issue": "陰鬱"},
+            "丑": {"title": "極耐型", "climate": "凍土疊加，僵硬", "function": "固執與堅持", "structure": "愚公移山。認定一件事就會死磕到底，撞了南牆也不回頭", "social": "極度固執，不善言辭，但絕對忠誠可靠", "issue": "封閉"},
+            "寅": {"title": "慢熱領導", "climate": "寒土培木，生發難", "function": "醞釀與開創", "structure": "穩健的開拓者。做事一步一腳印，雖然慢，但基礎打得非常紮實", "social": "誠懇、踏實，給人一種值得信賴的領導風範", "issue": "遲緩"},
+            "卯": {"title": "溫柔忍者", "climate": "凍土藏草，堅韌", "function": "忍耐與適應", "structure": "外柔內剛的強者。看起來柔弱，其實內心極其強大，能忍受巨大的壓力", "social": "溫和、謙卑，身段軟，但原則性很強", "issue": "壓抑"},
+            "辰": {"title": "後期爆發", "climate": "濕土相疊，厚重", "function": "積累與轉化", "structure": "厚積薄發的黑馬。前半生通常默默無聞，在積累資源，後半生突然爆發", "social": "樸實、勤奮，不愛出風頭，容易被忽視", "issue": "自卑"},
+            "巳": {"title": "思考型輸出", "climate": "火暖凍土，解凍", "function": "智慧與表達", "structure": "有溫度的智者。巳火溫暖了丑土，讓冰冷的智慧變得有人情味", "social": "熱心、願意分享，善於用簡單的語言解釋複雜的道理", "issue": "好辯"},
+            "午": {"title": "撐場型", "climate": "火生濕土，晦火", "function": "奉獻與支撐", "structure": "默默付出的支柱。吸收了午火的熱情，轉化為對他人的具體支持", "social": "任勞任怨，哪裡需要幫忙就去哪裡，是最佳的工具人", "issue": "委屈"},
+            "未": {"title": "照顧累積", "climate": "土氣對衝，開庫", "function": "變動與包容", "structure": "衝動的守護者。平時沈穩，一旦觸及底線（如家人受傷）會瞬間爆發", "social": "雖然固執，但心地善良，喜歡照顧弱小", "issue": "固執己見"},
+            "申": {"title": "技術深耕", "climate": "土生金，收藏", "function": "專注與技能", "structure": "專業職人。將耐心轉化為對技術的極致追求，是頂尖的工程師或工匠", "social": "簡單、直接，除了工作技術外，對其他事情不太關心", "issue": "單調"},
+            "酉": {"title": "精工型", "climate": "土金相生，成器", "function": "完美與秩序", "structure": "細節控。對品質有著近乎強迫症的要求，追求絕對的精準", "social": "嚴謹、一絲不苟，讓人覺得壓力很大，但作品無可挑剔", "issue": "挑剔"},
+            "戌": {"title": "責任終結者", "climate": "土氣互刑，沈重", "function": "刑傷與責任", "structure": "沈重的承擔者。人生往往伴隨著沈重的責任或家族業力，必須去解決", "social": "嚴肅、悲觀，總是一副心事重重的樣子", "issue": "悲觀"},
+            "亥": {"title": "長線財星", "climate": "泥水混雜，肥沃", "function": "智慧與財富", "structure": "精明的投資者。懂得利用時間的複利效應，擅長長線投資與資源積累", "social": "務實、低調，不炫富，但其實實力雄厚", "issue": "貪婪"}
+        }
+    }
+}
+
+def parse_month_hour(output: str) -> tuple:
+    """Parse the output to extract month pillar (月令) and hour pillar (時辰).
+    
+    Args:
+        output: The formatted output text
+        
+    Returns:
+        Tuple of (month_zhi, hour_zhi) like ("辰", "子") or (None, None) if not found
+    """
+    try:
+        # Pattern to match four pillars format: 【月】甲:寅建... or 【时】乙:卯建...
+        # Also try: 月柱: 甲寅 or 時柱: 乙卯
+        month_patterns = [
+            re.compile(r'【月】[^:]*:([子丑寅卯辰巳午未申酉戌亥])'),
+            re.compile(r'月柱[：:]\s*[^\s]*([子丑寅卯辰巳午未申酉戌亥])'),
+        ]
+        hour_patterns = [
+            re.compile(r'【时】[^:]*:([子丑寅卯辰巳午未申酉戌亥])'),
+            re.compile(r'【時】[^:]*:([子丑寅卯辰巳午未申酉戌亥])'),
+            re.compile(r'時柱[：:]\s*[^\s]*([子丑寅卯辰巳午未申酉戌亥])'),
+        ]
+        
+        month_zhi = None
+        hour_zhi = None
+        
+        for pattern in month_patterns:
+            match = pattern.search(output)
+            if match:
+                month_zhi = match.group(1)
+                break
+        
+        for pattern in hour_patterns:
+            match = pattern.search(output)
+            if match:
+                hour_zhi = match.group(1)
+                break
+        
+        return (month_zhi, hour_zhi)
+    except Exception as e:
+        return (None, None)
+
+
+def add_personality_analysis(output: str, month_zhi: str, hour_zhi: str) -> str:
+    """Add personality analysis after 日柱解讀 section.
+    
+    Args:
+        output: The formatted output text
+        month_zhi: Month pillar (月令) like "辰"
+        hour_zhi: Hour pillar (時辰) like "子"
+        
+    Returns:
+        Modified output with personality analysis added
+    """
+    if not month_zhi or not hour_zhi:
+        return output
+    
+    if month_zhi not in personality_matrix:
+        return output
+    
+    if hour_zhi not in personality_matrix[month_zhi]["hours"]:
+        return output
+    
+    # Get personality data
+    month_data = personality_matrix[month_zhi]
+    hour_data = month_data["hours"][hour_zhi]
+    
+    # Find the position after 日柱解讀 section
+    lines = output.splitlines()
+    result = []
+    rizhu_found = False
+    separator_found = False
+    
+    for i, line in enumerate(lines):
+        result.append(line)
+        
+        # Check if this is 日柱解讀 section
+        if "日柱解讀" in line or "日柱解读" in line:
+            rizhu_found = True
+        elif rizhu_found and not separator_found:
+            # Check if this is the separator line after 日柱解讀 (usually "="*120)
+            if line.strip() and ("=" * 50 in line or "=" * 100 in line):
+                separator_found = True
+                # Add personality analysis after the separator line
+                analysis = f"""
+【{month_data["name"]} × {hour_zhi}時】{hour_data["title"]}
+
+📌 月令主題：{month_data["theme"]}
+⚡ 能量特質：{month_data["energy"]}
+
+🌍 氣候背景（月令）：{hour_data["climate"]}
+   時辰功能：{hour_data["function"]}
+
+🧠 性格結構：{hour_data["structure"]}
+
+👥 人際/行為表現：{hour_data["social"]}
+
+⚠️ 核心課題：{hour_data["issue"]}
+"""
+                result.append(analysis.strip())
+                rizhu_found = False
+    
+    return '\n'.join(result)
+
+
 st.set_page_config(page_title="八字排盤，僅作參考", layout="wide")
 
 # Simplified -> Traditional converter with custom rule: keep 丑 (not 醜)
@@ -3629,6 +3978,11 @@ with st.container():
         # 如果有当前大运信息，在输出中添加标识（在大运列表上方）
         if current_dayun:
             output = add_current_dayun_marker(output, current_dayun)
+        
+        # 解析月令和时辰，添加性格分析
+        month_zhi, hour_zhi = parse_month_hour(output)
+        if month_zhi and hour_zhi:
+            output = add_personality_analysis(output, month_zhi, hour_zhi)
         
         # 顯示八字排盤結果
         if output:
