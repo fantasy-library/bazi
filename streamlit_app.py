@@ -552,17 +552,23 @@ def parse_month_hour(output: str) -> tuple:
                 if not hour_zhi:
                     hour_zhi = zhi_line_match.group(4)  # Fourth is hour
         
-        # Method 3: Parse from first line format: 【月】甲:寅建... or 【时】乙:卯建...
+        # Method 3: Parse from "【月】甲:寅建..." format (only if 四柱 format not found)
+        # Note: Do NOT parse from "【月】6:-6巳" format as "巳" is not the month zhi
+        # Only parse from format like "【月】甲:寅建..." where 寅 is the actual zhi
         if not month_zhi or not hour_zhi:
             lines = output.splitlines()
             for line in lines:
+                # Only match format like "【月】甲:寅建..." where there's a gan before colon
                 if '【月】' in line and not month_zhi:
-                    month_match = re.search(r'【月】[^:]*:([子丑寅卯辰巳午未申酉戌亥])', line)
+                    # Match format: 【月】甲:寅建... (gan:zhi format)
+                    month_match = re.search(r'【月】[甲乙丙丁戊己庚辛壬癸][：:]([子丑寅卯辰巳午未申酉戌亥])', line)
                     if month_match:
                         month_zhi = month_match.group(1)
                 
+                # Only match format like "【时】乙:卯建..." where there's a gan before colon
                 if ('【时】' in line or '【時】' in line) and not hour_zhi:
-                    hour_match = re.search(r'【[时時]】[^:]*:([子丑寅卯辰巳午未申酉戌亥])', line)
+                    # Match format: 【时】乙:卯建... (gan:zhi format)
+                    hour_match = re.search(r'【[时時]】[甲乙丙丁戊己庚辛壬癸][：:]([子丑寅卯辰巳午未申酉戌亥])', line)
                     if hour_match:
                         hour_zhi = hour_match.group(1)
         
@@ -4017,11 +4023,10 @@ with st.container():
         
         # 解析月令和时辰，添加性格分析
         month_zhi, hour_zhi = parse_month_hour(output)
-        # Debug: 打印解析结果（临时调试用，可以注释掉）
+        # Debug: 打印解析结果（临时调试用，可以取消注释查看）
+        # st.write(f"Debug: 解析结果 - 月令={month_zhi}, 時辰={hour_zhi}")
         if month_zhi and hour_zhi:
             output = add_personality_analysis(output, month_zhi, hour_zhi)
-        # else:
-        #     st.write(f"Debug: 未能解析 - 月令={month_zhi}, 時辰={hour_zhi}")
         
         # 顯示八字排盤結果
         if output:
