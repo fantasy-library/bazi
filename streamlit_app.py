@@ -651,7 +651,8 @@ def add_personality_analysis(output: str, month_zhi: str, hour_zhi: str) -> str:
 🌍 氣候背景（月令）：{hour_data["climate"]}
    時辰功能：{hour_data["function"]}
 🧠 性格結構：{hour_data["structure"]}
-👥 人際/行為表現：{hour_data["social"]}"""
+👥 人際/行為表現：{hour_data["social"]}
+==================================================================================================================="""
                 result.append(analysis)
                 rizhu_found = False
     
