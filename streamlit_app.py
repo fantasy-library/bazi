@@ -155,12 +155,16 @@ def format_output(text: str) -> str:
     t = strip_ansi(text)
     t = sanitize_citations(t)
 
-    # Remove unwanted lines like 大運、流年 (but keep dayun data lines)
+    # Remove unwanted lines like 大運、流年
+    # But keep the actual dayun list lines (they contain age numbers and ganzhi)
     lines = t.splitlines()
     filtered_lines = []
     for line in lines:
-        # Skip title lines containing 大運 or 流年 (but keep data lines)
-        if line.strip() == '大運' or line.strip() == '大运' or '流年' in line:
+        # Skip title lines containing only 大運 or 流年 (but keep actual data lines)
+        if line.strip() == '大運' or line.strip() == '流年' or line.strip() == '大运' or line.strip() == '流年':
+            continue
+        # Skip lines that are just separators with 大運 or 流年
+        if re.match(r'^[=\-]+.*大[運运]', line) or re.match(r'^[=\-]+.*流年', line):
             continue
         # Skip all lines containing 財庫
         if '財庫' in line:
@@ -178,69 +182,91 @@ def format_output(text: str) -> str:
     return t + "\n"
 
 
-def mark_current_dayun(output: str, birth_year: int, birth_month: int, birth_day: int) -> str:
-    """在輸出中標記當前大運
+def parse_current_dayun(output: str, birth_year: int, birth_month: int, birth_day: int) -> str:
+    """Parse the output to find current dayun based on current age.
     
     Args:
-        output: 八字排盤輸出文本
-        birth_year: 出生年份
-        birth_month: 出生月份
-        birth_day: 出生日期
-    
+        output: The formatted output text
+        birth_year: Birth year
+        birth_month: Birth month  
+        birth_day: Birth day
+        
     Returns:
-        標記了當前大運的輸出文本
+        Current dayun in format like "癸酉" or empty string if not found
     """
-    if not output:
+    try:
+        from datetime import datetime
+        today = datetime.now()
+        birth_date = datetime(birth_year, birth_month, birth_day)
+        current_age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+        
+        # Parse dayun lines - format: "9  乙亥 絕 山頭火 ..." or "29 癸酉 死 劍鋒金 ..."
+        lines = output.splitlines()
+        dayun_pattern = re.compile(r'^\s*(\d+)\s+([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])')
+        
+        current_dayun = ""
+        prev_age = 0
+        prev_dayun = ""
+        
+        for line in lines:
+            match = dayun_pattern.match(line)
+            if match:
+                age = int(match.group(1))
+                ganzhi = match.group(2)
+                
+                # If current age is between prev_age and this age, use prev_dayun
+                if prev_age > 0 and prev_age <= current_age < age:
+                    current_dayun = prev_dayun
+                    break
+                # If current age >= this age, this might be the current dayun
+                if current_age >= age:
+                    current_dayun = ganzhi
+                    prev_age = age
+                    prev_dayun = ganzhi
+                else:
+                    # If we've passed the current age, break
+                    break
+        
+        # If we didn't find a match but have a prev_dayun, use it
+        if not current_dayun and prev_dayun:
+            current_dayun = prev_dayun
+            
+        return current_dayun
+    except Exception as e:
+        return ""
+
+
+def add_current_dayun_marker(output: str, current_dayun: str) -> str:
+    """Add a marker line above the dayun list showing current dayun.
+    
+    Args:
+        output: The formatted output text
+        current_dayun: Current dayun in format like "癸酉"
+        
+    Returns:
+        Modified output with current dayun marker added
+    """
+    if not current_dayun:
         return output
     
-    # 計算當前年齡
-    today = datetime.now()
-    birth_date = datetime(birth_year, birth_month, birth_day)
-    age = today.year - birth_date.year
-    # 如果還沒過生日，年齡減1
-    if (today.month, today.day) < (birth_date.month, birth_date.day):
-        age -= 1
-    
     lines = output.splitlines()
-    result_lines = []
-    dayun_start_ages = []  # 存儲每個大運的起始年齡
+    result = []
+    dayun_pattern = re.compile(r'^\s*(\d+)\s+([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])')
+    dayun_found = False
     
-    # 第一遍：找出所有大運行的起始年齡
     for i, line in enumerate(lines):
-        # 大運行格式：以數字開頭，例如 "9 乙亥 絕..." 或 "29 癸酉 死..."
-        # 使用正則表達式匹配：開頭是數字（1-3位），後面跟著空格，然後是干支
-        # 干支可能是天干+地支，例如 "乙亥"、"癸酉"
-        match = re.match(r'^(\d{1,3})\s+([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])', line.strip())
-        if match:
-            start_age = int(match.group(1))
-            dayun_start_ages.append((i, start_age))
+        # Check if this is the first dayun line
+        match = dayun_pattern.match(line)
+        if match and not dayun_found:
+            # Add the marker line before the first dayun
+            # Use special characters to make it stand out in code block
+            # Format with stars to simulate bold: "** 命主當前大運: 癸酉 **"
+            marker = f"** 命主當前大運: {current_dayun} **"
+            result.append(marker)
+            dayun_found = True
+        result.append(line)
     
-    # 找到當前大運
-    current_dayun_index = None
-    for idx, (line_idx, start_age) in enumerate(dayun_start_ages):
-        # 如果當前年齡 >= 這個大運的起始年齡
-        if age >= start_age:
-            # 檢查是否有下一個大運
-            if idx + 1 < len(dayun_start_ages):
-                next_start_age = dayun_start_ages[idx + 1][1]
-                # 如果當前年齡 < 下一個大運的起始年齡，則這是當前大運
-                if age < next_start_age:
-                    current_dayun_index = line_idx
-                    break
-            else:
-                # 這是最後一個大運，且當前年齡 >= 起始年齡
-                current_dayun_index = line_idx
-                break
-    
-    # 第二遍：構建輸出，在當前大運行後添加標記
-    for i, line in enumerate(lines):
-        if i == current_dayun_index:
-            # 在當前大運行的末尾添加粗體標記
-            result_lines.append(line + " **<--命主當前大運**")
-        else:
-            result_lines.append(line)
-    
-    return '\n'.join(result_lines)
+    return '\n'.join(result)
 
 
 st.set_page_config(page_title="八字排盤，僅作參考", layout="wide")
@@ -3590,11 +3616,19 @@ with st.container():
 
         # 显示加载状态
         with st.spinner(T("正在计算八字命盘，请稍候...")):
-            raw_output = run_script(args)
-            output = format_output(raw_output)
-            # 標記當前大運（僅在非高級模式下，因為高級模式沒有出生日期信息）
-            if not advanced_bazi:
-                output = mark_current_dayun(output, int(year), int(month), int(day))
+            output = format_output(run_script(args))
+        
+        # 解析当前大运（仅在非高级模式下，因为有出生日期信息）
+        current_dayun = ""
+        if not advanced_bazi:
+            try:
+                current_dayun = parse_current_dayun(output, int(year), int(month), int(day))
+            except:
+                pass
+        
+        # 如果有当前大运信息，在输出中添加标识（在大运列表上方）
+        if current_dayun:
+            output = add_current_dayun_marker(output, current_dayun)
         
         # 顯示八字排盤結果
         if output:
@@ -3653,29 +3687,7 @@ with st.container():
             """
             st.components.v1.html(copy_output_html, height=80)
             
-            # 將輸出中的粗體標記轉換為 HTML 格式以便顯示
-            # 由於代碼塊中 markdown 不會渲染，使用 HTML 格式
-            import html
-            lines = output.split('\n')
-            output_html_lines = []
-            for line in lines:
-                if '**<--命主當前大運**' in line:
-                    # 將標記行轉換為 HTML 格式，使用紅色粗體
-                    # 先將標記部分替換為佔位符，轉義整行，然後恢復標記為 HTML
-                    placeholder = '___CURRENT_DAYUN_MARKER___'
-                    line_with_placeholder = line.replace('**<--命主當前大運**', placeholder)
-                    line_escaped = html.escape(line_with_placeholder)
-                    # 將佔位符替換為 HTML 格式的標記
-                    line_escaped = line_escaped.replace(placeholder, '<strong style="color: #ff0000; font-weight: bold; background-color: #fff3cd;">&lt;--命主當前大運</strong>')
-                    output_html_lines.append(line_escaped)
-                else:
-                    # 轉義其他行的 HTML 特殊字符
-                    output_html_lines.append(html.escape(line))
-            
-            output_html = '\n'.join(output_html_lines)
-            # 使用 HTML pre 標籤保持格式
-            st.markdown(f'<pre style="font-family: monospace; white-space: pre-wrap; background-color: #f8f9fa; padding: 10px; border-radius: 5px;">{output_html}</pre>', unsafe_allow_html=True)
-            # 同時保存原始輸出（不含標記）到 session state
+            st.markdown(f"```\n{output}\n```")
             st.session_state.bazi_output = output
 
 
