@@ -526,30 +526,82 @@ def parse_month_hour(output: str) -> tuple:
     try:
         # Pattern to match four pillars format: 【月】甲:寅建... or 【时】乙:卯建...
         # Also try: 月柱: 甲寅 or 時柱: 乙卯
+        # Also match the second line with zhis.month and zhis.time directly
         month_patterns = [
             re.compile(r'【月】[^:]*:([子丑寅卯辰巳午未申酉戌亥])'),
             re.compile(r'月柱[：:]\s*[^\s]*([子丑寅卯辰巳午未申酉戌亥])'),
+            # Match zhis.month in the second line: "辰陽..."
+            re.compile(r'([子丑寅卯辰巳午未申酉戌亥])[陰陽][^【]*【[^】]*】[^【]*【月】'),
+            # Match standalone month zhi
+            re.compile(r'([子丑寅卯辰巳午未申酉戌亥])[陰陽][^【]*【[^】]*】[^【]*【[^】]*】[^【]*【[^】]*】[^【]*【月】'),
         ]
         hour_patterns = [
             re.compile(r'【时】[^:]*:([子丑寅卯辰巳午未申酉戌亥])'),
             re.compile(r'【時】[^:]*:([子丑寅卯辰巳午未申酉戌亥])'),
             re.compile(r'時柱[：:]\s*[^\s]*([子丑寅卯辰巳午未申酉戌亥])'),
+            # Match zhis.time in the second line: "子陰..."
+            re.compile(r'([子丑寅卯辰巳午未申酉戌亥])[陰陽][^【]*【[^】]*】[^【]*【[^】]*】[^【]*【[^】]*】[^【]*【时】'),
+            re.compile(r'([子丑寅卯辰巳午未申酉戌亥])[陰陽][^【]*【[^】]*】[^【]*【[^】]*】[^【]*【[^】]*】[^【]*【時】'),
         ]
         
         month_zhi = None
         hour_zhi = None
         
-        for pattern in month_patterns:
-            match = pattern.search(output)
-            if match:
-                month_zhi = match.group(1)
-                break
+        # Method 1: Parse from first line format: 【月】甲:寅建... or 【时】乙:卯建...
+        # The format is: 【月】甲:寅建... where 寅 is the month zhi
+        lines = output.splitlines()
+        for line in lines:
+            # Match 【月】甲:寅建... format - extract the zhi after the colon
+            if '【月】' in line and not month_zhi:
+                # Format: 【月】甲:寅建... - find zhi after :
+                month_match = re.search(r'【月】[^:]*:([子丑寅卯辰巳午未申酉戌亥])', line)
+                if month_match:
+                    month_zhi = month_match.group(1)
+            
+            # Match 【时】乙:卯建... or 【時】乙:卯建... format
+            if ('【时】' in line or '【時】' in line) and not hour_zhi:
+                hour_match = re.search(r'【[时時]】[^:]*:([子丑寅卯辰巳午未申酉戌亥])', line)
+                if hour_match:
+                    hour_zhi = hour_match.group(1)
         
-        for pattern in hour_patterns:
-            match = pattern.search(output)
-            if match:
-                hour_zhi = match.group(1)
-                break
+        # Method 2: Parse from second line format: "辰陽...【月】" 
+        # Find the zhi that appears before 【月】in the second line
+        if not month_zhi or not hour_zhi:
+            for line in lines:
+                if '【月】' in line and not month_zhi:
+                    # Find all zhi+yinyang patterns before 【月】
+                    parts = line.split('【月】')
+                    if len(parts) > 0:
+                        before_part = parts[0]
+                        # Find all zhi patterns, the second one should be month
+                        zhi_matches = list(re.finditer(r'([子丑寅卯辰巳午未申酉戌亥])[陰陽]', before_part))
+                        if len(zhi_matches) >= 2:
+                            month_zhi = zhi_matches[1].group(1)  # Second is month
+                
+                if ('【时】' in line or '【時】' in line) and not hour_zhi:
+                    marker = '【时】' if '【时】' in line else '【時】'
+                    parts = line.split(marker)
+                    if len(parts) > 0:
+                        before_part = parts[0]
+                        # Find all zhi patterns, the fourth one should be time
+                        zhi_matches = list(re.finditer(r'([子丑寅卯辰巳午未申酉戌亥])[陰陽]', before_part))
+                        if len(zhi_matches) >= 4:
+                            hour_zhi = zhi_matches[3].group(1)  # Fourth is time
+        
+        # If not found, try patterns
+        if not month_zhi:
+            for pattern in month_patterns:
+                match = pattern.search(output)
+                if match:
+                    month_zhi = match.group(1)
+                    break
+        
+        if not hour_zhi:
+            for pattern in hour_patterns:
+                match = pattern.search(output)
+                if match:
+                    hour_zhi = match.group(1)
+                    break
         
         return (month_zhi, hour_zhi)
     except Exception as e:
@@ -3981,8 +4033,11 @@ with st.container():
         
         # 解析月令和时辰，添加性格分析
         month_zhi, hour_zhi = parse_month_hour(output)
+        # Debug: 打印解析结果（临时调试用，可以注释掉）
         if month_zhi and hour_zhi:
             output = add_personality_analysis(output, month_zhi, hour_zhi)
+        # else:
+        #     st.write(f"Debug: 未能解析 - 月令={month_zhi}, 時辰={hour_zhi}")
         
         # 顯示八字排盤結果
         if output:
