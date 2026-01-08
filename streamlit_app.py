@@ -622,6 +622,34 @@ def add_personality_analysis(output: str, month_zhi: str, hour_zhi: str) -> str:
     
     if hour_zhi not in personality_matrix[month_zhi]["hours"]:
         return output
+
+    def soften_tone(s: str) -> str:
+        """Soften overly absolute wording into tendency/possibility wording."""
+        if not s:
+            return s
+        t = s
+        replacements = [
+            ("永遠", "往往"),
+            ("絕對", "相對"),
+            ("一定", "多半"),
+            ("完全", "相當"),
+            ("極度", "較為"),
+            ("必然", "往往"),
+            ("必須不斷", "可能更傾向於持續"),
+            ("必須", "可能更需要"),
+            ("無法忍受", "不太容易接受"),
+            ("無法", "不太容易"),
+            ("很難", "可能較難"),
+            ("從來不", "較少"),
+            ("誰都", "多數人"),
+            ("沒有人", "不一定有人"),
+            ("一成不變", "過於固定"),
+            ("隨時準備離開", "有時會保留較大的流動空間"),
+            ("讓人無所適從", "讓人偶爾有點難以捉摸"),
+        ]
+        for a, b in replacements:
+            t = t.replace(a, b)
+        return t
     
     # Get personality data
     month_data = personality_matrix[month_zhi]
@@ -645,13 +673,13 @@ def add_personality_analysis(output: str, month_zhi: str, hour_zhi: str) -> str:
                 separator_found = True
                 # Add personality analysis after the separator line
                 # No empty lines between items, and remove "核心課題" line
-                analysis = f"""【{month_data["name"]} × {hour_zhi}時】{hour_data["title"]}
+                analysis = f"""【{month_data["name"]} × {hour_zhi}時】{soften_tone(hour_data["title"])}
 📌 月令主題：{month_data["theme"]}
 ⚡ 能量特質：{month_data["energy"]}
-🌍 氣候背景（月令）：{hour_data["climate"]}
-   時辰功能：{hour_data["function"]}
-🧠 性格結構：{hour_data["structure"]}
-👥 人際/行為表現：{hour_data["social"]}
+🌍 氣候背景（月令）：{soften_tone(hour_data["climate"])}
+   時辰功能：{soften_tone(hour_data["function"])}
+🧠 性格結構：{soften_tone(hour_data["structure"])}
+👥 人際/行為表現：{soften_tone(hour_data["social"])}
 ==================================================================================================================="""
                 result.append(analysis)
                 rizhu_found = False
