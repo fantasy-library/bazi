@@ -4054,6 +4054,9 @@ with st.container():
                 gan_day + zhi_day,
                 gan_time + zhi_time,
             ]
+            # female flag - 高级模式下也传递性别参数
+            if st.session_state.gender == 'female':
+                args.append("-n")
         else:
             args = [
                 "bazi.py",
@@ -4073,6 +4076,14 @@ with st.container():
         # 显示加载状态
         with st.spinner(T("正在计算八字命盘，请稍候...")):
             output = format_output(run_script(args))
+        
+        # 高级模式下，如果输出中没有性别信息，手动添加
+        if advanced_bazi:
+            gender_text = "女命" if st.session_state.gender == 'female' else "男命"
+            # 检查输出中是否已有性别信息（检查是否包含"男命"或"女命"）
+            if "男命" not in output[:200] and "女命" not in output[:200]:
+                # 在输出开头添加性别信息
+                output = f"{gender_text} " + output
         
         # 解析当前大运（仅在非高级模式下，因为有出生日期信息）
         current_dayun = ""
