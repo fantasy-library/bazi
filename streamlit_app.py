@@ -161,9 +161,11 @@ def format_output(text: str) -> str:
     filtered_lines = []
     for line in lines:
         # Skip title lines containing only 大運 or 流年 (but keep actual data lines)
+        # IMPORTANT: Keep lines like "大运： 甲子 乙丑 ..." (高级模式的大运输出)
         if line.strip() == '大運' or line.strip() == '流年' or line.strip() == '大运' or line.strip() == '流年':
             continue
         # Skip lines that are just separators with 大運 or 流年
+        # But keep lines starting with "大运：" or "大運：" (高级模式的大运列表)
         if re.match(r'^[=\-]+.*大[運运]', line) or re.match(r'^[=\-]+.*流年', line):
             continue
         # Skip all lines containing 財庫
@@ -4075,7 +4077,8 @@ with st.container():
 
         # 显示加载状态
         with st.spinner(T("正在计算八字命盘，请稍候...")):
-            output = format_output(run_script(args))
+            raw_output = run_script(args)
+            output = format_output(raw_output)
         
         # 高级模式下，如果输出中没有性别信息，手动添加
         if advanced_bazi:
@@ -4084,6 +4087,24 @@ with st.container():
             if "男命" not in output[:200] and "女命" not in output[:200]:
                 # 在输出开头添加性别信息
                 output = f"{gender_text} " + output
+            
+            # 检查并确保高级模式下大运信息正确显示
+            # bazi.py 在高级模式下输出格式为："大运： 甲子 乙丑 丙寅 ..."
+            # 如果 format_output 后没有大运信息，从原始输出中提取并添加
+            if "大运：" not in output and "大運：" not in output:
+                # 从原始输出中查找大运信息
+                dayun_match = re.search(r'大[運运][：:]\s*([^\n]+)', raw_output)
+                if dayun_match:
+                    dayun_info = dayun_match.group(0)
+                    # 在输出中添加大运信息（在分隔线之后）
+                    if "=" * 120 in output:
+                        # 在第一个分隔线之后添加大运信息
+                        parts = output.split("=" * 120, 1)
+                        if len(parts) == 2:
+                            output = parts[0] + "=" * 120 + "\n\n" + dayun_info + "\n" + parts[1]
+                    else:
+                        # 如果没有分隔线，在输出末尾添加
+                        output = output.rstrip() + "\n\n" + dayun_info + "\n"
         
         # 解析当前大运（仅在非高级模式下，因为有出生日期信息）
         current_dayun = ""
