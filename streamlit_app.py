@@ -4047,14 +4047,44 @@ with st.container():
     
     if calculate_button:
         if advanced_bazi:
+            # 验证和纠正输入的天干地支
+            from ganzhi import Gan, Zhi
+            
+            # 常见错误纠正映射
+            zhi_corrections = {
+                "戍": "戌",  # 常见错误：戍 -> 戌
+            }
+            
+            # 验证和纠正天干
+            gan_inputs = [gan_year.strip(), gan_month.strip(), gan_day.strip(), gan_time.strip()]
+            zhi_inputs = [zhi_year.strip(), zhi_month.strip(), zhi_day.strip(), zhi_time.strip()]
+            
+            # 纠正地支中的常见错误
+            zhi_inputs = [zhi_corrections.get(zhi, zhi) for zhi in zhi_inputs]
+            
+            # 验证输入是否有效
+            invalid_gans = [g for g in gan_inputs if g not in Gan]
+            invalid_zhis = [z for z in zhi_inputs if z not in Zhi]
+            
+            if invalid_gans or invalid_zhis:
+                error_msg = T("输入错误：")
+                if invalid_gans:
+                    error_msg += f"\n- 无效的天干：{', '.join(invalid_gans)}"
+                    error_msg += f"\n- 有效的天干：{', '.join(Gan)}"
+                if invalid_zhis:
+                    error_msg += f"\n- 无效的地支：{', '.join(invalid_zhis)}"
+                    error_msg += f"\n- 有效的地支：{', '.join(Zhi)}"
+                st.error(error_msg)
+                st.stop()
+            
             # python bazi.py -b year month day time  (each is pair of gan/zhi)
             args = [
                 "bazi.py",
                 "-b",
-                gan_year + zhi_year,
-                gan_month + zhi_month,
-                gan_day + zhi_day,
-                gan_time + zhi_time,
+                gan_inputs[0] + zhi_inputs[0],
+                gan_inputs[1] + zhi_inputs[1],
+                gan_inputs[2] + zhi_inputs[2],
+                gan_inputs[3] + zhi_inputs[3],
             ]
             # female flag - 高级模式下也传递性别参数
             if st.session_state.gender == 'female':
@@ -4078,6 +4108,22 @@ with st.container():
         # 显示加载状态
         with st.spinner(T("正在计算八字命盘，请稍候...")):
             raw_output = run_script(args)
+            
+            # 检查是否有错误
+            if "Traceback" in raw_output or "Error" in raw_output or "TypeError" in raw_output:
+                # 如果是高级模式，尝试提供更友好的错误信息
+                if advanced_bazi:
+                    error_msg = T("计算过程中出现错误。")
+                    if "TypeError" in raw_output and "getGZ" in raw_output:
+                        error_msg += "\n\n" + T("可能的原因：输入的天干地支格式不正确。")
+                        error_msg += "\n" + T("请确保：")
+                        error_msg += "\n- 天干必须是：甲、乙、丙、丁、戊、己、庚、辛、壬、癸"
+                        error_msg += "\n- 地支必须是：子、丑、寅、卯、辰、巳、午、未、申、酉、戌、亥"
+                        error_msg += "\n- 注意：'戍' 应改为 '戌'"
+                    st.error(error_msg)
+                    st.code(raw_output, language="python")
+                    st.stop()
+            
             output = format_output(raw_output)
         
         # 高级模式下，如果输出中没有性别信息，手动添加
@@ -4090,21 +4136,40 @@ with st.container():
             
             # 检查并确保高级模式下大运信息正确显示
             # bazi.py 在高级模式下输出格式为："大运： 甲子 乙丑 丙寅 ..."
-            # 如果 format_output 后没有大运信息，从原始输出中提取并添加
-            if "大运：" not in output and "大運：" not in output:
-                # 从原始输出中查找大运信息
-                dayun_match = re.search(r'大[運运][：:]\s*([^\n]+)', raw_output)
-                if dayun_match:
-                    dayun_info = dayun_match.group(0)
-                    # 在输出中添加大运信息（在分隔线之后）
-                    if "=" * 120 in output:
-                        # 在第一个分隔线之后添加大运信息
-                        parts = output.split("=" * 120, 1)
-                        if len(parts) == 2:
-                            output = parts[0] + "=" * 120 + "\n\n" + dayun_info + "\n" + parts[1]
+            # 查找大运信息并格式化显示
+            dayun_match = re.search(r'大[運运][：:]\s*([^\n]+)', raw_output)
+            if dayun_match:
+                dayun_info = dayun_match.group(1).strip()  # 提取大运干支列表
+                # 格式化大运信息，使其更明显
+                formatted_dayun = f"\n{'='*120}\n大運：\n{dayun_info}\n{'='*120}\n"
+                
+                # 检查输出中是否已有大运信息
+                if "大运：" not in output and "大運：" not in output:
+                    # 如果没有，在合适的位置添加
+                    # 查找"四柱："之后的位置插入大运信息
+                    si_zhu_match = re.search(r'四柱[：:]\s*([^\n]+)', output)
+                    if si_zhu_match:
+                        # 在"四柱"信息之后插入大运信息
+                        si_zhu_pos = output.find(si_zhu_match.group(0))
+                        next_line_pos = output.find('\n', si_zhu_pos)
+                        if next_line_pos != -1:
+                            output = output[:next_line_pos+1] + formatted_dayun + output[next_line_pos+1:]
                     else:
-                        # 如果没有分隔线，在输出末尾添加
-                        output = output.rstrip() + "\n\n" + dayun_info + "\n"
+                        # 如果没有找到"四柱"，在分隔线之后添加
+                        if "=" * 120 in output:
+                            parts = output.split("=" * 120, 1)
+                            if len(parts) == 2:
+                                output = parts[0] + "=" * 120 + formatted_dayun + parts[1]
+                        else:
+                            # 如果没有分隔线，在输出末尾添加
+                            output = output.rstrip() + formatted_dayun
+                else:
+                    # 如果已有大运信息，检查格式是否需要改进
+                    # 查找现有的大运信息并替换为格式化版本
+                    existing_dayun_match = re.search(r'大[運运][：:]\s*([^\n]+)', output)
+                    if existing_dayun_match:
+                        # 替换为格式化版本
+                        output = output.replace(existing_dayun_match.group(0), formatted_dayun.strip())
         
         # 解析当前大运（仅在非高级模式下，因为有出生日期信息）
         current_dayun = ""
