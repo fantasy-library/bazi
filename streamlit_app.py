@@ -709,10 +709,6 @@ def add_personality_analysis(output: str, month_zhi: str, hour_zhi: str) -> str:
                 if "social" in hour_data:
                     analysis_parts.append(f"社會表象：{soften_tone(hour_data['social'])}")
                 
-                # Add issue if available (hour level)
-                if "issue" in hour_data and hour_data["issue"]:
-                    analysis_parts.append(f"潛在課題：{soften_tone(hour_data['issue'])}")
-                
                 analysis_parts.append("=" * 120)
                 analysis = "\n".join(analysis_parts)
                 result.append(analysis)
