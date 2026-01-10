@@ -681,37 +681,37 @@ def add_personality_analysis(output: str, month_zhi: str, hour_zhi: str) -> str:
                 # Support both simple and detailed formats
                 analysis_parts = [
                     f"【{month_data['name']} × {hour_zhi}時】{soften_tone(hour_data['title'])}",
-                    f"📌 月令主題：{month_data['theme']}",
-                    f"⚡ 能量特質：{month_data['energy']}"
+                    f"月令主題：{month_data['theme']}",
+                    f"能量特質：{month_data['energy']}"
                 ]
                 
                 # Add key_analysis if available (month level)
                 if "key_analysis" in month_data and month_data["key_analysis"]:
-                    analysis_parts.append(f"🔍 核心分析：{soften_tone(month_data['key_analysis'])}")
+                    analysis_parts.append(f"核心分析：{soften_tone(month_data['key_analysis'])}")
                 
                 # Add climate (hour level)
                 if "climate" in hour_data:
-                    analysis_parts.append(f"🌍 氣候調候：{soften_tone(hour_data['climate'])}")
+                    analysis_parts.append(f"氣候調候：{soften_tone(hour_data['climate'])}")
                 
                 # Add interaction if available (hour level)
                 if "interaction" in hour_data and hour_data["interaction"]:
-                    analysis_parts.append(f"⚖️ 五行十神互動：{soften_tone(hour_data['interaction'])}")
+                    analysis_parts.append(f"五行十神互動：{soften_tone(hour_data['interaction'])}")
                 
                 # Add function (hour level)
                 if "function" in hour_data:
-                    analysis_parts.append(f"💫 時辰功能：{soften_tone(hour_data['function'])}")
+                    analysis_parts.append(f"時辰功能：{soften_tone(hour_data['function'])}")
                 
                 # Add structure (hour level)
                 if "structure" in hour_data:
-                    analysis_parts.append(f"🧠 人格結構：{soften_tone(hour_data['structure'])}")
+                    analysis_parts.append(f"人格結構：{soften_tone(hour_data['structure'])}")
                 
                 # Add social (hour level)
                 if "social" in hour_data:
-                    analysis_parts.append(f"👥 社會表象：{soften_tone(hour_data['social'])}")
+                    analysis_parts.append(f"社會表象：{soften_tone(hour_data['social'])}")
                 
                 # Add issue if available (hour level)
                 if "issue" in hour_data and hour_data["issue"]:
-                    analysis_parts.append(f"⚠️ 潛在課題：{soften_tone(hour_data['issue'])}")
+                    analysis_parts.append(f"潛在課題：{soften_tone(hour_data['issue'])}")
                 
                 analysis_parts.append("=" * 120)
                 analysis = "\n".join(analysis_parts)
