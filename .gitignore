@@ -114,6 +114,17 @@ Thumbs.db
 
 # Streamlit
 .streamlit/secrets.toml
+.streamlit/
+
+# Project specific
+personality_matrix_raw.py
+*.bak
+*.tmp
+
+# Documentation build
+docs/_build/
+site/
+
 
 
 
