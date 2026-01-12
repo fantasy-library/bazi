@@ -3043,20 +3043,23 @@ if ge == '财' or ge == '才':
         # 检查是否有吉神煞辅助
         favorable_shas = []
         
-        # 检查天德贵人
-        if gans[1] in g_shens['天德'][me] or zhis[1] in g_shens['天德'][me]:
-            favorable_shas.append("天德贵人")
+        # 检查天德贵人（使用month_shens，按月支查）
+        if '天德' in month_shens and zhis[1] in month_shens['天德']:
+            tian_de_value = month_shens['天德'][zhis[1]]
+            # 天德值可能是天干或地支，检查四柱中是否有该值
+            if any(gans[i] == tian_de_value or zhis[i] == tian_de_value for i in range(4)):
+                favorable_shas.append("天德贵人")
         
         # 检查太极贵人  
-        if gans[1] in g_shens['太极'][me] or zhis[1] in g_shens['太极'][me]:
+        if '太极' in g_shens and (gans[1] in g_shens['太极'][me] or zhis[1] in g_shens['太极'][me]):
             favorable_shas.append("太极贵人")
         
         # 检查金匮贵人
-        if gans[1] in g_shens['金匮'][me] or zhis[1] in g_shens['金匮'][me]:
+        if '金匮' in g_shens and (gans[1] in g_shens['金匮'][me] or zhis[1] in g_shens['金匮'][me]):
             favorable_shas.append("金匮贵人")
         
         # 检查太阴贵人
-        if gans[1] in g_shens['太阴'][me] or zhis[1] in g_shens['太阴'][me]:
+        if '太阴' in g_shens and (gans[1] in g_shens['太阴'][me] or zhis[1] in g_shens['太阴'][me]):
             favorable_shas.append("太阴贵人")
         
         # 检查将星
